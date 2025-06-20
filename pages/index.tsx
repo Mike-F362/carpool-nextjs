@@ -16,101 +16,6 @@ const eqSet = (xs: Set<string>, ys: Set<string>) =>
 
 type Fahrt = { datum: Date, fahrerA: string; fahrerB: string; };
 
-function berechneFahrerQuote(anwesend: Set<string>, daten: [Fahrt], anwesenheiten: [Set<string>]): Map<string, number> {
-    const quotes = new Map<string, number>();
-
-    anwesenheiten.forEach((anwesenheit, index) => {
-        if (eqSet(anwesenheit, anwesend)) {
-            const fahrt = daten[index];
-
-            const fahrtenA = quotes.get(fahrt.fahrerA) | 0;
-            quotes.set(fahrt.fahrerA, fahrtenA + 1);
-        }
-    });
-
-    return quotes;
-
-    /* quotes for all
-    daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: number) => {
-      const anwesende = anwesenheiten[index];
-      const key = Array.from(anwesende).join('-');
-      if (!quotes.has(key)) {
-        quotes.set(key, new Map<string, number>());
-      }
-
-      const quoteA = quotes.get(key);
-      const fahrtenA = quoteA.get(fahrt.fahrerA) | 0;
-      quoteA.set(fahrt.fahrerA, fahrtenA + 1);
-
-      const quoteB = quotes.get(key);
-      const fahrtenB = quoteB.get(fahrt.fahrerB) | 0;
-      quoteB.set(fahrt.fahrerB, fahrtenB + 1);
-    });
-    */
-
-    /*
-    const quote = {};
-    mitglieder.forEach(name => {
-      let anzahlAnwesend = 0;
-      let anzahlFahrten = 0;
-      daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: string | number) => {
-        if (anwesenheiten[index]?.has(name)) anzahlAnwesend++;
-        if (fahrt.fahrerA === name || fahrt.fahrerB === name) anzahlFahrten++;
-      });
-      quote[name] = anzahlAnwesend ? anzahlFahrten / anzahlAnwesend : 0;
-    });
-    return quote;
-    */
-}
-
-function berechneFahrerQuote2(fahrerA: string, anwesend: Set<string>, daten: [{ fahrerA: string; fahrerB: string; }], anwesenheiten: [Set<string>]): Map<string, number> {
-    const quotes = new Map<string, number>();
-
-    daten.forEach((fahrt, index) => {
-        if (fahrt.fahrerA === fahrerA) {
-            const anwesenheit = anwesenheiten[index];
-
-            // TODO: check anwesend set
-            const fahrtenB = quotes.get(fahrt.fahrerB) | 0;
-            quotes.set(fahrt.fahrerB, fahrtenB + 1);
-        }
-    })
-
-    return quotes;
-
-    /* quotes for all
-    daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: number) => {
-      const anwesende = anwesenheiten[index];
-      const key = Array.from(anwesende).join('-');
-      if (!quotes.has(key)) {
-        quotes.set(key, new Map<string, number>());
-      }
-
-      const quoteA = quotes.get(key);
-      const fahrtenA = quoteA.get(fahrt.fahrerA) | 0;
-      quoteA.set(fahrt.fahrerA, fahrtenA + 1);
-
-      const quoteB = quotes.get(key);
-      const fahrtenB = quoteB.get(fahrt.fahrerB) | 0;
-      quoteB.set(fahrt.fahrerB, fahrtenB + 1);
-    });
-    */
-
-    /*
-    const quote = {};
-    mitglieder.forEach(name => {
-      let anzahlAnwesend = 0;
-      let anzahlFahrten = 0;
-      daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: string | number) => {
-        if (anwesenheiten[index]?.has(name)) anzahlAnwesend++;
-        if (fahrt.fahrerA === name || fahrt.fahrerB === name) anzahlFahrten++;
-      });
-      quote[name] = anzahlAnwesend ? anzahlFahrten / anzahlAnwesend : 0;
-    });
-    return quote;
-    */
-}
-
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
     const [daten, setDaten] = useState<Array<Fahrt>>([]);
@@ -132,11 +37,111 @@ export default function Home() {
     const [startpunkt1, setStartpunkt1] = useState<string[]>([]);
     const [zwischenstopp, setZwischenstopp] = useState<string[]>([]);
 
+    function berechneFahrerQuote(anwesend: Set<string>, daten: [Fahrt], anwesenheiten: [Set<string>]): Map<string, number> {
+        const quotes = new Map<string, number>();
+        const zwischenstoppSet = new Set (mitglieder.filter(mitglied => mitglied.startpunkt === 2).map(mitglied => mitglied.name));
+
+        anwesenheiten.forEach((anwesenheit, index) => {
+            anwesenheit = anwesenheit.difference(zwischenstoppSet);
+
+            if (eqSet(anwesenheit, anwesend)) {
+                const fahrt = daten[index];
+
+                const fahrtenA = quotes.get(fahrt.fahrerA) | 0;
+                quotes.set(fahrt.fahrerA, fahrtenA + 1);
+            }
+        });
+
+        return quotes;
+
+        /* quotes for all
+        daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: number) => {
+          const anwesende = anwesenheiten[index];
+          const key = Array.from(anwesende).join('-');
+          if (!quotes.has(key)) {
+            quotes.set(key, new Map<string, number>());
+          }
+
+          const quoteA = quotes.get(key);
+          const fahrtenA = quoteA.get(fahrt.fahrerA) | 0;
+          quoteA.set(fahrt.fahrerA, fahrtenA + 1);
+
+          const quoteB = quotes.get(key);
+          const fahrtenB = quoteB.get(fahrt.fahrerB) | 0;
+          quoteB.set(fahrt.fahrerB, fahrtenB + 1);
+        });
+        */
+
+        /*
+        const quote = {};
+        mitglieder.forEach(name => {
+          let anzahlAnwesend = 0;
+          let anzahlFahrten = 0;
+          daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: string | number) => {
+            if (anwesenheiten[index]?.has(name)) anzahlAnwesend++;
+            if (fahrt.fahrerA === name || fahrt.fahrerB === name) anzahlFahrten++;
+          });
+          quote[name] = anzahlAnwesend ? anzahlFahrten / anzahlAnwesend : 0;
+        });
+        return quote;
+        */
+    }
+
+    function berechneFahrerQuote2(fahrerA: string, anwesend: Set<string>, daten: [{ fahrerA: string; fahrerB: string; }], anwesenheiten: [Set<string>]): Map<string, number> {
+        const quotes = new Map<string, number>();
+
+        daten.forEach((fahrt, index) => {
+            if (fahrt.fahrerA === fahrerA) {
+                const anwesenheit = anwesenheiten[index];
+
+                // TODO: check anwesend set
+                const fahrtenB = quotes.get(fahrt.fahrerB) | 0;
+                quotes.set(fahrt.fahrerB, fahrtenB + 1);
+            }
+        })
+
+        return quotes;
+
+        /* quotes for all
+        daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: number) => {
+          const anwesende = anwesenheiten[index];
+          const key = Array.from(anwesende).join('-');
+          if (!quotes.has(key)) {
+            quotes.set(key, new Map<string, number>());
+          }
+
+          const quoteA = quotes.get(key);
+          const fahrtenA = quoteA.get(fahrt.fahrerA) | 0;
+          quoteA.set(fahrt.fahrerA, fahrtenA + 1);
+
+          const quoteB = quotes.get(key);
+          const fahrtenB = quoteB.get(fahrt.fahrerB) | 0;
+          quoteB.set(fahrt.fahrerB, fahrtenB + 1);
+        });
+        */
+
+        /*
+        const quote = {};
+        mitglieder.forEach(name => {
+          let anzahlAnwesend = 0;
+          let anzahlFahrten = 0;
+          daten.forEach((fahrt: { fahrerA: string; fahrerB: string; }, index: string | number) => {
+            if (anwesenheiten[index]?.has(name)) anzahlAnwesend++;
+            if (fahrt.fahrerA === name || fahrt.fahrerB === name) anzahlFahrten++;
+          });
+          quote[name] = anzahlAnwesend ? anzahlFahrten / anzahlAnwesend : 0;
+        });
+        return quote;
+        */
+    }
+
+
     function simuliereFahrt(anwesend: Set<string>, daten, anwesenheiten) {
-        let quote = berechneFahrerQuote(anwesend, daten, anwesenheiten);
         const anwesend1 = Array.from(anwesend)
-            .filter(n => startpunkt1.includes(n))
-            .sort((a, b) => {
+            .filter(n => startpunkt1.includes(n));
+        let quote = berechneFahrerQuote(new Set(anwesend1), daten, anwesenheiten);
+
+        anwesend1.sort((a, b) => {
                 return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
             });
 
