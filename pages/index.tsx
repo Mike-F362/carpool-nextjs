@@ -262,7 +262,7 @@ export default function Home() {
         const fahrt: Fahrt = {datum: simDatum, ...fahrer};
 
         await supabase.from("fahrten").insert({
-            datum: datum,
+            datum: simDatum,
             anwesenheit: anwesend,
             fahrer_a: fahrer.fahrerA,
             fahrer_b: fahrer.fahrerB
