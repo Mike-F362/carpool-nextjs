@@ -3,10 +3,12 @@ import {useEffect, useState, useRef} from 'react';
 import {supabase} from '../lib/supabaseClient';
 import {tagsManifest} from "next/dist/server/lib/incremental-cache/tags-manifest.external";
 // import styles from './index.module.css';
+import Fahrerverwaltung, {Fahrer} from "../components/Fahrerverwaltung";
 
-const startpunkt1 = ["Anna", "Bernd", "Carla"];
-const zwischenstopp = startpunkt1.concat(["Dana", "Kurt"]);
-const mitglieder = Array.from(new Set([...startpunkt1, ...zwischenstopp]));
+
+// const startpunkt1 = ["Anna", "Bernd", "Carla"];
+// const zwischenstopp = startpunkt1.concat(["Dana", "Kurt"]);
+// const mitglieder = Array.from(new Set([...startpunkt1, ...zwischenstopp]));
 
 const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
@@ -109,44 +111,13 @@ function berechneFahrerQuote2(fahrerA: string, anwesend: Set<string>, daten: [{ 
     */
 }
 
-function simuliereFahrt(anwesend: Set<string>, daten, anwesenheiten) {
-    let quote = berechneFahrerQuote(anwesend, daten, anwesenheiten);
-    const anwesend1 = Array.from(anwesend)
-        .filter(n => startpunkt1.includes(n))
-        .sort((a, b) => {
-            return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
-        });
-
-    const fahrerA = anwesend1[0] || "?";
-
-    console.log(`Fahrer A ${fahrerA} quote`, quote);
-
-    const anwesend2 = Array.from(anwesend)
-        .filter(n => zwischenstopp.includes(n) && !startpunkt1.includes(n));
-
-    quote = berechneFahrerQuote2(fahrerA, new Set(anwesend2), daten, anwesenheiten);
-
-    anwesend2.push(fahrerA);
-    anwesend2.sort((a, b) => {
-        return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
-    });
-
-    const fahrerB = anwesend2[0] || "?";
-
-    console.log(`Fahrer B ${fahrerB} quote`, quote);
-
-    return {
-        fahrerA,
-        fahrerB
-    };
-}
-
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
     const [daten, setDaten] = useState<Array<Fahrt>>([]);
     const [datum, setDatum] = useState<Date>();
 
     const [log, setLog] = useState([]);
+    const [fahrerVerwaltungAktiv, setFahrerVerwaltungAktiv] = useState(false);
     const [neuerTagAktiv, setNeuerTagAktiv] = useState(false);
     const [aktuellerVorschlag, setAktuellerVorschlag] = useState({fahrerA: "", fahrerB: ""});
     const [aktuelleAnwesenheit, setAktuelleAnwesenheit] = useState(new Set<string>());
@@ -155,6 +126,43 @@ export default function Home() {
     const [visibleRows, setVisibleRows] = useState(pageSize);
 
     const tableContainerRef = useRef(null);
+
+    const [fahrerListe, setFahrerListe] = useState<Fahrer[]>([]);
+    const [mitglieder, setMitglieder] = useState<Fahrer[]>([]);
+    const [startpunkt1, setStartpunkt1] = useState<string[]>([]);
+    const [zwischenstopp, setZwischenstopp] = useState<string[]>([]);
+
+    function simuliereFahrt(anwesend: Set<string>, daten, anwesenheiten) {
+        let quote = berechneFahrerQuote(anwesend, daten, anwesenheiten);
+        const anwesend1 = Array.from(anwesend)
+            .filter(n => startpunkt1.includes(n))
+            .sort((a, b) => {
+                return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
+            });
+
+        const fahrerA = anwesend1[0] || "?";
+
+        console.log(`Fahrer A ${fahrerA} quote`, quote);
+
+        const anwesend2 = Array.from(anwesend)
+            .filter(n => zwischenstopp.includes(n) && !startpunkt1.includes(n));
+
+        quote = berechneFahrerQuote2(fahrerA, new Set(anwesend2), daten, anwesenheiten);
+
+        anwesend2.push(fahrerA);
+        anwesend2.sort((a, b) => {
+            return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
+        });
+
+        const fahrerB = anwesend2[0] || "?";
+
+        console.log(`Fahrer B ${fahrerB} quote`, quote);
+
+        return {
+            fahrerA,
+            fahrerB
+        };
+    }
 
     useEffect(() => {
         async function lade() {
@@ -169,6 +177,27 @@ export default function Home() {
         }
 
         lade();
+    }, []);
+
+    useEffect(() => {
+        const ladeFahrer = async () => {
+            const { data } = await supabase.from("fahrer").select("*");
+            if (data) {
+                const fahrer: Fahrer[] = data.map(e => {return {
+                    id: e.id,
+                    name: e.name,
+                    startpunkt: e.startpunkt
+                }
+                });
+                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt===1).map(fahrer => fahrer.name);
+                setStartpunkt1(sp1)
+                const zw = fahrer.filter(fahrer => fahrer.startpunkt===2).map(fahrer => fahrer.name);
+                setZwischenstopp(sp1.concat(zw));
+                setFahrerListe(fahrer);
+                setMitglieder(fahrer);
+            }
+        };
+        ladeFahrer();
     }, []);
 
     const toggleAnwesenheit = (name) => {
@@ -216,7 +245,7 @@ export default function Home() {
 
     const simulate = async () => {
 
-        const aktuelleAnwesenheit = new Set<string>(["Anna", "Bernd", "Carla", "Dana", "Kurt"]);
+        const aktuelleAnwesenheit = new Set<string>(mitglieder.map(m => m.name));
         const aktuellerVorschlag = simuliereFahrt(aktuelleAnwesenheit, daten, anwesenheiten);
 
         let datum = daten.map(d => d.datum).reduce((prev, curr, index, arr) => {
@@ -261,13 +290,13 @@ export default function Home() {
         setAnwesenheiten([]);
         setLog([]);
         localStorage.removeItem("fahrtverteilung");
-        await supabase.from("fahrten").delete().gt("datum", 0);
+        await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
     };
 
     return (
         <div className="container py-4">
             <Head>
-                <title>Fahrtverteilung</title>
+                <title>Carpool Planner</title>
                 <link
                     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
                     rel="stylesheet"
@@ -281,17 +310,26 @@ export default function Home() {
           }
         `}</style>
             </Head>
-            <h1 className="mb-3">Fahrtverteilung</h1>
+            <h1 className="mb-3">Carpool Planner</h1>
 
             <div className="d-flex gap-2 mb-3">
                 <button className="btn btn-primary" onClick={neuerTagStarten}>Neuer Tag</button>
                 <button className="btn btn-outline-secondary" onClick={() => tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'})}>⤴ Zur neuesten Fahrt</button>
 
+                <button className="btn btn-success mb-3" onClick={() => setFahrerVerwaltungAktiv(true)}>Fahrerverwaltung</button>
                 <button className="btn btn-warning mb-3" onClick={reset}>Reset</button>
                 <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
             </div>
 
-            <div className="input-group" style={{ width: '200px' }}>
+            {fahrerVerwaltungAktiv && (
+                <Fahrerverwaltung
+                    fahrerListe={fahrerListe}
+                    setFahrerListe={setFahrerListe}
+                    setMitglieder={setMitglieder}
+                />
+            )}
+
+            <div className="input-group" style={{width: '200px'}}>
                 <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
                 <select
                     id="pageSize"
@@ -309,7 +347,7 @@ export default function Home() {
                 </select>
             </div>
 
-            <div style={{ height: '1rem' }}></div>
+            <div style={{height: '1rem'}}></div>
 
             {neuerTagAktiv && (
                 <div className="card p-3 mb-3">
@@ -318,10 +356,10 @@ export default function Home() {
                         <input type="date" className="form-control" id="datum" value={datum.toISOString().split("T")[0]} onChange={e => setDatum(new Date(e.target.value || ''))}/>
                     </div>
                     <h5>Wer ist da?</h5>
-                    {mitglieder.map(name => (
-                        <div className="form-check" key={name}>
-                            <input className="form-check-input" type="checkbox" id={name} checked={aktuelleAnwesenheit.has(name)} onChange={() => toggleAnwesenheit(name)}/>
-                            <label className="form-check-label" htmlFor={name}>{name}</label>
+                    {mitglieder.map(mitglied => (
+                        <div className="form-check" key={mitglied.id}>
+                            <input className="form-check-input" type="checkbox" id={mitglied.name} checked={aktuelleAnwesenheit.has(mitglied.name)} onChange={() => toggleAnwesenheit(mitglied.name)}/>
+                            <label className="form-check-label" htmlFor={mitglied.name}>{mitglied.name}</label>
                         </div>
                     ))}
                     <div className="mt-3">
@@ -354,17 +392,17 @@ export default function Home() {
                     <thead>
                     <tr>
                         <th>Tag</th>
-                        {mitglieder.map(name => <th key={name}>{name}</th>)}
+                        {mitglieder.map(mitglied => <th key={mitglied.name}>{mitglied.name}</th>)}
                         <th>Fahrer</th>
                     </tr>
                     </thead>
                     <tbody>
                     {[...daten].slice(-visibleRows).map((f, i, arr) => (
                         <tr key={i} className="">
-                            <td>{ f.datum.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'})}</td>
+                            <td>{f.datum.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'})}</td>
 
                             {mitglieder.map(m => (
-                                <td key={m} className={f.fahrerA === m ? "table-warning" : f.fahrerB === m ? "table-primary" : ""}>{anwesenheiten[daten.indexOf(f)]?.has(m) ? "✓" : ""}</td>
+                                <td key={m.name} className={f.fahrerA === m.name ? "table-warning" : f.fahrerB === m.name ? "table-primary" : ""}>{anwesenheiten[daten.indexOf(f)]?.has(m.name) ? "✓" : ""}</td>
                             ))}
                             <td><strong>{f.fahrerA} → {f.fahrerB}</strong></td>
                         </tr>
@@ -372,8 +410,6 @@ export default function Home() {
                     </tbody>
                 </table>
             </div>
-
-            {/*<pre className="bg-light p-3">{log.slice(0, visibleRows).join("\n")}</pre>*/}
         </div>
     );
 }
