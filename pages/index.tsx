@@ -328,6 +328,7 @@ export default function Home() {
                     setMitglieder={setMitglieder}
                 />
             )}
+{/*
 
             <div className="input-group" style={{width: '200px'}}>
                 <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
@@ -347,6 +348,7 @@ export default function Home() {
                 </select>
             </div>
 
+*/}
             <div style={{height: '1rem'}}></div>
 
             {neuerTagAktiv && (
@@ -384,7 +386,7 @@ export default function Home() {
 
             <div
                 className="table-responsive mb-3"
-                // style={{maxHeight: "800px", overflowY: "auto"}}
+                style={{maxHeight: "500px", overflowY: "auto"}}
                 ref={tableContainerRef}
                 onScroll={handleScroll}
             >
