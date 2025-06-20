@@ -399,7 +399,9 @@ export default function Home() {
                     </tr>
                     </thead>
                     <tbody>
-                    {[...daten].slice(-visibleRows).map((f, i, arr) => (
+                    {
+                        // [...daten].slice(-visibleRows).map((f, i, arr) => (
+                        [...daten].map((f, i, arr) => (
                         <tr key={i} className="">
                             <td>{f.datum.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'})}</td>
 
