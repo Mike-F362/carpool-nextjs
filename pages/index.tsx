@@ -346,10 +346,6 @@ export default function Home() {
                     {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
                 </button>
 
-                <button className="btn btn-outline-secondary" onClick={() => tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'})}>⤴ Zur neuesten Fahrt</button>
-            </div>
-
-            <div className="d-flex gap-2 mb-3">
                 <button
                     className="btn btn-outline-secondary d-flex align-items-center gap-2"
                     onClick={() => setFahrerVerwaltungAktiv(v => !v)}
@@ -363,7 +359,9 @@ export default function Home() {
     ▼
                     </span>
                 </button>
+            </div>
 
+            <div className="d-flex gap-2 mb-3">
                 <button className="btn btn-warning mb-3" onClick={reset}>Reset</button>
                 <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
             </div>
@@ -402,7 +400,7 @@ export default function Home() {
             </div>
 
 */}
-            <div style={{height: '1rem'}}></div>
+            {/*<div style={{height: '1rem'}}></div>*/}
 
             {neuerTagAktiv && (
                 <div className="card p-3 mb-3">
@@ -446,7 +444,20 @@ export default function Home() {
                 <table className="table table-bordered table-sm">
                     <thead>
                     <tr>
-                        <th>Datum</th>
+                        <th>
+                            Datum
+                            <button
+                                className="btn btn-sm btn-outline-secondary ms-2"
+                                title="Zur neuesten Fahrt scrollen"
+                                onClick={() => {
+                                    const el = document.querySelector('table');
+                                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'end' });
+                                }}
+                            >
+                                ↑
+                            </button>
+                        </th>
+
                         {fahrerListe.map(fahrer => (
                             <th key={fahrer.name} className="d-none d-sm-table-cell">{fahrer.name}</th>
                         ))}
@@ -471,7 +482,7 @@ export default function Home() {
                                 >
                                     <td>
                                         {new Date(f.datum || "").toLocaleDateString("de-DE", {
-                                            weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
+                                            weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit"
                                         })}
                                     </td>
                                     {anwesenheitszellen}
