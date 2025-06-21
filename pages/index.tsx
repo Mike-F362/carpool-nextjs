@@ -15,7 +15,7 @@ const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
     [...xs].every((x) => ys.has(x));
 
-type Fahrt = { datum: Date, fahrerA: string; fahrerB: string; };
+interface Fahrt { id?: string, datum: Date, fahrerA: string; fahrerB: string; }
 
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
