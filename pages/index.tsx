@@ -15,7 +15,7 @@ const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
     [...xs].every((x) => ys.has(x));
 
-interface Fahrt { id?: string, datum: Date, fahrerA: string; fahrerB: string; }
+interface Fahrt { id?: number, datum: Date, fahrerA: string; fahrerB: string; }
 
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
@@ -37,6 +37,8 @@ export default function Home() {
     const [mitglieder, setMitglieder] = useState<Fahrer[]>([]);
     const [startpunkt1, setStartpunkt1] = useState<string[]>([]);
     const [zwischenstopp, setZwischenstopp] = useState<string[]>([]);
+
+    const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
 
     function berechneFahrerQuote(anwesend: Set<string>, daten: [Fahrt], anwesenheiten: [Set<string>]): Map<string, number> {
         const quotes = new Map<string, number>();
@@ -170,19 +172,20 @@ export default function Home() {
         };
     }
 
-    useEffect(() => {
-        async function lade() {
-            const {data} = await supabase.from("fahrten").select("*").order("datum", {ascending: false});
-            if (data) {
-                setDaten(data.map(d => ({
-                    datum: new Date(d.datum),
-                    fahrerA: d.fahrer_a, fahrerB: d.fahrer_b
-                })));
-                setAnwesenheiten(data.map(d => new Set(d.anwesenheit)));
-            }
+    async function ladeFahrten() {
+        const {data} = await supabase.from("fahrten").select("*").order("datum", {ascending: false});
+        if (data) {
+            setDaten(data.map(d => ({
+                id: d.id,
+                datum: new Date(d.datum),
+                fahrerA: d.fahrer_a, fahrerB: d.fahrer_b
+            })));
+            setAnwesenheiten(data.map(d => new Set(d.anwesenheit)));
         }
+    }
 
-        lade();
+    useEffect(() => {
+        ladeFahrten();
     }, []);
 
     useEffect(() => {
@@ -301,7 +304,11 @@ export default function Home() {
         await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
     };
 
-    const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
+    const entferneFahrt = async (id: number) => {
+        if (!confirm("Diese Fahrt wirklich löschen?")) return;
+        await supabase.from("fahrten").delete().eq("id", id);
+        ladeFahrten();
+    };
 
     const zeileUmschalten = (index: number) => {
         setGeöffneteZeilen(prev =>
@@ -333,7 +340,8 @@ export default function Home() {
 
           .clickable-row:hover {
               background-color: #f8f9fa;
-        }
+          }
+          
         `}</style>
             </Head>
             <h1 className="mb-3">Carpool Planner</h1>
@@ -444,24 +452,29 @@ export default function Home() {
                 <table className="table table-bordered table-sm">
                     <thead>
                     <tr>
-                        <th>
-                            Datum
-                            <button
-                                className="btn btn-sm btn-outline-secondary ms-2"
-                                title="Zur neuesten Fahrt scrollen"
-                                onClick={() => {
-                                    const el = document.querySelector('table');
-                                    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'end' });
-                                }}
-                            >
-                                ↑
-                            </button>
+                        <th className="text-nowrap text-end" style={{ verticalAlign: "middle" }}>
+                            <div className="d-flex justify-content-between align-items-center">
+                                <span>Datum</span>
+                                <button
+                                    className="btn btn-sm btn-outline-secondary ms-2"
+                                    title="Zur ältesten Fahrt scrollen"
+                                    onClick={() => {
+                                        if (tableContainerRef.current) {
+                                            tableContainerRef.current.scrollTop = 0;
+                                        }
+                                    }}
+                                >
+                                    ↑
+                                </button>
+                            </div>
                         </th>
 
                         {fahrerListe.map(fahrer => (
-                            <th key={fahrer.name} className="d-none d-sm-table-cell">{fahrer.name}</th>
+                            <th key={fahrer.name} className="d-sm-table-cell">{fahrer.name}</th>
                         ))}
-                        <th className="d-none d-sm-table-cell">Fahrer</th>
+
+                        <th className="text-end" style={{ width: "1%" }}></th>
+
                     </tr>
                     </thead>
                     <tbody>
@@ -486,6 +499,17 @@ export default function Home() {
                                         })}
                                     </td>
                                     {anwesenheitszellen}
+                                    <td className="text-end">
+                                        <button
+                                            className="btn btn-sm  btn-outline-danger"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                entferneFahrt(f.id);
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
+                                    </td>
                                 </tr>
                                 {zeileIstOffen && (
                                     <tr>
@@ -497,6 +521,8 @@ export default function Home() {
                             </React.Fragment>
                         );
                     })}
+
+
                     </tbody>
                 </table>
             </div>
