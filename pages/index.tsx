@@ -4,6 +4,7 @@ import {supabase} from '../lib/supabaseClient';
 import {tagsManifest} from "next/dist/server/lib/incremental-cache/tags-manifest.external";
 // import styles from './index.module.css';
 import Fahrerverwaltung, {Fahrer} from "../components/Fahrerverwaltung";
+import React from 'react';
 
 
 // const startpunkt1 = ["Anna", "Bernd", "Carla"];
@@ -39,7 +40,7 @@ export default function Home() {
 
     function berechneFahrerQuote(anwesend: Set<string>, daten: [Fahrt], anwesenheiten: [Set<string>]): Map<string, number> {
         const quotes = new Map<string, number>();
-        const zwischenstoppSet = new Set (mitglieder.filter(mitglied => mitglied.startpunkt === 2).map(mitglied => mitglied.name));
+        const zwischenstoppSet = new Set(mitglieder.filter(mitglied => mitglied.startpunkt === 2).map(mitglied => mitglied.name));
 
         anwesenheiten.forEach((anwesenheit, index) => {
             anwesenheit = anwesenheit.difference(zwischenstoppSet);
@@ -142,8 +143,8 @@ export default function Home() {
         let quote = berechneFahrerQuote(new Set(anwesend1), daten, anwesenheiten);
 
         anwesend1.sort((a, b) => {
-                return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
-            });
+            return ((quote.get(a) | 0) - (quote.get(b) | 0)) || a.localeCompare(b);
+        });
 
         const fahrerA = anwesend1[0] || "?";
 
@@ -186,17 +187,18 @@ export default function Home() {
 
     useEffect(() => {
         const ladeFahrer = async () => {
-            const { data } = await supabase.from("fahrer").select("*");
+            const {data} = await supabase.from("fahrer").select("*");
             if (data) {
-                const fahrer: Fahrer[] = data.map(e => {return {
-                    id: e.id,
-                    name: e.name,
-                    startpunkt: e.startpunkt
-                }
+                const fahrer: Fahrer[] = data.map(e => {
+                    return {
+                        id: e.id,
+                        name: e.name,
+                        startpunkt: e.startpunkt
+                    }
                 });
-                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt===1).map(fahrer => fahrer.name);
+                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.name);
                 setStartpunkt1(sp1)
-                const zw = fahrer.filter(fahrer => fahrer.startpunkt===2).map(fahrer => fahrer.name);
+                const zw = fahrer.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.name);
                 setZwischenstopp(sp1.concat(zw));
                 setFahrerListe(fahrer);
                 setMitglieder(fahrer);
@@ -254,7 +256,8 @@ export default function Home() {
         const aktuellerVorschlag = simuliereFahrt(aktuelleAnwesenheit, daten, anwesenheiten);
 
         let datum = daten.map(d => d.datum).reduce((prev, curr, index, arr) => {
-            return prev > curr ? prev : curr }, new Date());
+            return prev > curr ? prev : curr
+        }, new Date());
 
         let simDatum = new Date(datum);
         do {
@@ -298,6 +301,16 @@ export default function Home() {
         await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
     };
 
+    const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
+
+    const zeileUmschalten = (index: number) => {
+        setGeöffneteZeilen(prev =>
+            prev.includes(index)
+                ? prev.filter(i => i !== index)
+                : [...prev, index]
+        );
+    };
+
     return (
         <div className="container py-4">
             <Head>
@@ -313,27 +326,62 @@ export default function Home() {
             background: white;
             z-index: 2;
           }
+          .collapse-wrapper > div {
+              transition: max-height 0.5s ease;
+              overflow: hidden;
+            }
+
+          .clickable-row:hover {
+              background-color: #f8f9fa;
+        }
         `}</style>
             </Head>
             <h1 className="mb-3">Carpool Planner</h1>
 
             <div className="d-flex gap-2 mb-3">
-                <button className="btn btn-primary" onClick={neuerTagStarten}>Neuer Tag</button>
-                <button className="btn btn-outline-secondary" onClick={() => tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'})}>⤴ Zur neuesten Fahrt</button>
+                <button
+                    className="btn btn-primary"
+                    onClick={neuerTagAktiv ? () => setNeuerTagAktiv(false) : neuerTagStarten}
+                >
+                    {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
+                </button>
 
-                <button className="btn btn-success mb-3" onClick={() => setFahrerVerwaltungAktiv(true)}>Fahrerverwaltung</button>
+                <button className="btn btn-outline-secondary" onClick={() => tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'})}>⤴ Zur neuesten Fahrt</button>
+            </div>
+
+            <div className="d-flex gap-2 mb-3">
+                <button
+                    className="btn btn-outline-secondary d-flex align-items-center gap-2"
+                    onClick={() => setFahrerVerwaltungAktiv(v => !v)}
+                >
+                    Fahrerverwaltung
+                    <span style={{
+                        display: "inline-block",
+                        transform: fahrerVerwaltungAktiv ? "rotate(180deg)" : "rotate(0deg)",
+                        transition: "transform 0.3s ease"
+                    }}>
+    ▼
+                    </span>
+                </button>
+
                 <button className="btn btn-warning mb-3" onClick={reset}>Reset</button>
                 <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
             </div>
 
-            {fahrerVerwaltungAktiv && (
-                <Fahrerverwaltung
-                    fahrerListe={fahrerListe}
-                    setFahrerListe={setFahrerListe}
-                    setMitglieder={setMitglieder}
-                />
-            )}
-{/*
+            <div
+                className={`collapse-wrapper ${fahrerVerwaltungAktiv ? "show" : ""}`}
+                style={{ overflow: "hidden", transition: "max-height 0.5s ease" }}
+            >
+                <div style={{ maxHeight: fahrerVerwaltungAktiv ? "1000px" : "0" }}>
+                    <Fahrerverwaltung
+                        fahrerListe={fahrerListe}
+                        setFahrerListe={setFahrerListe}
+                        setMitglieder={setMitglieder}
+                    />
+                </div>
+            </div>
+
+            {/*
 
             <div className="input-group" style={{width: '200px'}}>
                 <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
@@ -398,24 +446,46 @@ export default function Home() {
                 <table className="table table-bordered table-sm">
                     <thead>
                     <tr>
-                        <th>Tag</th>
-                        {mitglieder.map(mitglied => <th key={mitglied.name}>{mitglied.name}</th>)}
-                        <th>Fahrer</th>
+                        <th>Datum</th>
+                        {fahrerListe.map(fahrer => (
+                            <th key={fahrer.name} className="d-none d-sm-table-cell">{fahrer.name}</th>
+                        ))}
+                        <th className="d-none d-sm-table-cell">Fahrer</th>
                     </tr>
                     </thead>
                     <tbody>
-                    {
-                        // [...daten].slice(-visibleRows).map((f, i, arr) => (
-                        [...daten].map((f, i, arr) => (
-                        <tr key={i} className="">
-                            <td>{f.datum.toLocaleDateString('de-DE', {weekday: 'short', day: '2-digit', month: '2-digit', year: 'numeric'})}</td>
+                    {[...daten].map((f, i) => {
+                        const zeileIstOffen = geöffneteZeilen.includes(i);
+                        const anwesenheitszellen = fahrerListe.map(m => (
+                            <td key={m.name} className={f.fahrerA === m.name ? "table-warning" : f.fahrerB === m.name ? "table-primary" : ""}>
+                                {anwesenheiten[daten.indexOf(f)]?.has(m.name) ? "✓" : ""}
+                            </td>
+                        ));
 
-                            {mitglieder.map(m => (
-                                <td key={m.name} className={f.fahrerA === m.name ? "table-warning" : f.fahrerB === m.name ? "table-primary" : ""}>{anwesenheiten[daten.indexOf(f)]?.has(m.name) ? "✓" : ""}</td>
-                            ))}
-                            <td><strong>{f.fahrerA} → {f.fahrerB}</strong></td>
-                        </tr>
-                    ))}
+                        return (
+                            <React.Fragment key={i}>
+                                <tr
+                                    className="clickable-row"
+                                    onClick={() => zeileUmschalten(i)}
+                                    style={{cursor: "pointer"}}
+                                >
+                                    <td>
+                                        {new Date(f.datum || "").toLocaleDateString("de-DE", {
+                                            weekday: "short", day: "2-digit", month: "2-digit", year: "numeric"
+                                        })}
+                                    </td>
+                                    {anwesenheitszellen}
+                                </tr>
+                                {zeileIstOffen && (
+                                    <tr>
+                                        <td colSpan={fahrerListe.length + 1} className="bg-light small">
+                                            <strong>Fahrer:</strong> {f.fahrerA} → {f.fahrerB}
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
                     </tbody>
                 </table>
             </div>
