@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "@/lib/supabaseClient";
 
 export interface Fahrer {id: number, name: string, startpunkt: number}
 

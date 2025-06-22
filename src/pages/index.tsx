@@ -1,11 +1,11 @@
 import Head from 'next/head';
-import {useEffect, useState, useRef} from 'react';
-import {supabase} from '../lib/supabaseClient';
+import React, {useEffect, useRef, useState} from 'react';
+import {supabase} from '@/lib/supabaseClient';
 import {tagsManifest} from "next/dist/server/lib/incremental-cache/tags-manifest.external";
 // import styles from './index.module.css';
-import Fahrerverwaltung, {Fahrer} from "../components/Fahrerverwaltung";
-import React from 'react';
-
+import Fahrerverwaltung, {Fahrer} from "@/components/Fahrerverwaltung";
+import NeuerTag from "@/components/new_day";
+import {Fahrt} from "@/interfaces/fahrt";
 
 // const startpunkt1 = ["Anna", "Bernd", "Carla"];
 // const zwischenstopp = startpunkt1.concat(["Dana", "Kurt"]);
@@ -14,8 +14,6 @@ import React from 'react';
 const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
     [...xs].every((x) => ys.has(x));
-
-interface Fahrt { id?: number, datum: Date, fahrerA: string; fahrerB: string; }
 
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
@@ -138,7 +136,6 @@ export default function Home() {
         */
     }
 
-
     function simuliereFahrt(anwesend: Set<string>, daten, anwesenheiten) {
         const anwesend1 = Array.from(anwesend)
             .filter(n => startpunkt1.includes(n));
@@ -209,14 +206,6 @@ export default function Home() {
         };
         ladeFahrer();
     }, []);
-
-    const toggleAnwesenheit = (name) => {
-        const kopie = new Set<string>(aktuelleAnwesenheit);
-        if (kopie.has(name)) kopie.delete(name);
-        else kopie.add(name);
-        setAktuelleAnwesenheit(kopie);
-        setAktuellerVorschlag(simuliereFahrt(kopie, daten, anwesenheiten));
-    };
 
     const neuerTagStarten = () => {
         const heute = new Date();
@@ -376,9 +365,9 @@ export default function Home() {
 
             <div
                 className={`collapse-wrapper ${fahrerVerwaltungAktiv ? "show" : ""}`}
-                style={{ overflow: "hidden", transition: "max-height 0.5s ease" }}
+                style={{overflow: "hidden", transition: "max-height 0.5s ease"}}
             >
-                <div style={{ maxHeight: fahrerVerwaltungAktiv ? "1000px" : "0" }}>
+                <div style={{maxHeight: fahrerVerwaltungAktiv ? "1000px" : "0"}}>
                     <Fahrerverwaltung
                         fahrerListe={fahrerListe}
                         setFahrerListe={setFahrerListe}
@@ -411,36 +400,22 @@ export default function Home() {
             {/*<div style={{height: '1rem'}}></div>*/}
 
             {neuerTagAktiv && (
-                <div className="card p-3 mb-3">
-                    <div className="mb-3">
-                        <label htmlFor="datum" className="form-label"><strong>Datum der Fahrt:</strong></label>
-                        <input type="date" className="form-control" id="datum" value={datum.toISOString().split("T")[0]} onChange={e => setDatum(new Date(e.target.value || ''))}/>
-                    </div>
-                    <h5>Wer ist da?</h5>
-                    {mitglieder.map(mitglied => (
-                        <div className="form-check" key={mitglied.id}>
-                            <input className="form-check-input" type="checkbox" id={mitglied.name} checked={aktuelleAnwesenheit.has(mitglied.name)} onChange={() => toggleAnwesenheit(mitglied.name)}/>
-                            <label className="form-check-label" htmlFor={mitglied.name}>{mitglied.name}</label>
-                        </div>
-                    ))}
-                    <div className="mt-3">
-                        <div className="mb-2">
-                            <label htmlFor="fahrerA" className="form-label"><strong>Fahrer ab Startpunkt 1:</strong></label>
-                            <select className="form-select" id="fahrerA" value={aktuellerVorschlag.fahrerA} onChange={e => setAktuellerVorschlag({...aktuellerVorschlag, fahrerA: e.target.value})}>
-                                <option value="">Wählen...</option>
-                                {Array.from(aktuelleAnwesenheit).filter(name => startpunkt1.includes(name)).map(name => <option key={name} value={name}>{name}</option>)}
-                            </select>
-                        </div>
-                        <div className="mb-2">
-                            <label htmlFor="fahrerB" className="form-label"><strong>Fahrer ab Zwischenstopp:</strong></label>
-                            <select className="form-select" id="fahrerB" value={aktuellerVorschlag.fahrerB} onChange={e => setAktuellerVorschlag({...aktuellerVorschlag, fahrerB: e.target.value})}>
-                                <option value="">Wählen...</option>
-                                {Array.from(aktuelleAnwesenheit).filter(name => zwischenstopp.includes(name)).map(name => <option key={name} value={name}>{name}</option>)}
-                            </select>
-                        </div>
-                    </div>
-                    <button className="btn btn-success mt-2" onClick={fahrtSpeichern}>Speichern</button>
-                </div>
+                <NeuerTag
+                    datum={datum}
+                    anwesenheiten={anwesenheiten}
+                    daten={daten}
+                    fahrerListe={fahrerListe}
+                    mitglieder={mitglieder}
+                    simuliereFahrt={simuliereFahrt}
+                    setAnwesenheiten={setAnwesenheiten}
+                    setDaten={setDaten}
+                    setDatum={setDatum}
+                    setNeuerTagAktiv={setNeuerTagAktiv}
+                    startpunkt1={startpunkt1}
+                    tableContainerRef={tableContainerRef}
+                    zwischenstopp={zwischenstopp}
+                    fahrtSpeichern={fahrtSpeichern}
+                />
             )}
 
             <div
@@ -452,7 +427,7 @@ export default function Home() {
                 <table className="table table-bordered table-sm">
                     <thead>
                     <tr>
-                        <th className="text-nowrap text-end" style={{ verticalAlign: "middle" }}>
+                        <th className="text-nowrap text-end" style={{verticalAlign: "middle"}}>
                             <div className="d-flex justify-content-between align-items-center">
                                 <span>Datum</span>
                                 <button
@@ -473,7 +448,7 @@ export default function Home() {
                             <th key={fahrer.name} className="d-sm-table-cell">{fahrer.name}</th>
                         ))}
 
-                        <th className="text-end" style={{ width: "1%" }}></th>
+                        <th className="text-end" style={{width: "1%"}}></th>
 
                     </tr>
                     </thead>
