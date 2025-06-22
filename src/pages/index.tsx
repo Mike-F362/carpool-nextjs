@@ -5,7 +5,7 @@ import {tagsManifest} from "next/dist/server/lib/incremental-cache/tags-manifest
 // import styles from './index.module.css';
 import Fahrerverwaltung, {Fahrer} from "@/components/Fahrerverwaltung";
 import NeuerTag from "@/components/new_day";
-import {Fahrt} from "@/interfaces/fahrt";
+import {Tour} from "@/interfaces/tour";
 
 // const startpunkt1 = ["Anna", "Bernd", "Carla"];
 // const zwischenstopp = startpunkt1.concat(["Dana", "Kurt"]);
@@ -17,7 +17,7 @@ const eqSet = (xs: Set<string>, ys: Set<string>) =>
 
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
-    const [daten, setDaten] = useState<Array<Fahrt>>([]);
+    const [daten, setDaten] = useState<Array<Tour>>([]);
     const [datum, setDatum] = useState<Date>();
 
     const [log, setLog] = useState([]);
@@ -38,7 +38,7 @@ export default function Home() {
 
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
 
-    function berechneFahrerQuote(anwesend: Set<string>, daten: [Fahrt], anwesenheiten: [Set<string>]): Map<string, number> {
+    function berechneFahrerQuote(anwesend: Set<string>, daten: [Tour], anwesenheiten: [Set<string>]): Map<string, number> {
         const quotes = new Map<string, number>();
         const zwischenstoppSet = new Set(mitglieder.filter(mitglied => mitglied.startpunkt === 2).map(mitglied => mitglied.name));
 
@@ -223,7 +223,7 @@ export default function Home() {
     const fahrtSpeichern = async () => {
         const anwesend = Array.from(aktuelleAnwesenheit);
         const fahrer = aktuellerVorschlag;
-        const fahrt: Fahrt = {datum, ...fahrer};
+        const fahrt: Tour = {datum, ...fahrer};
 
         await supabase.from("fahrten").insert({
             datum,
@@ -259,7 +259,7 @@ export default function Home() {
         // const tag = daten.length + 1;
         const anwesend = Array.from(aktuelleAnwesenheit);
         const fahrer = aktuellerVorschlag;
-        const fahrt: Fahrt = {datum: simDatum, ...fahrer};
+        const fahrt: Tour = {datum: simDatum, ...fahrer};
 
         await supabase.from("fahrten").insert({
             datum: simDatum,
@@ -294,7 +294,7 @@ export default function Home() {
     };
 
     const entferneFahrt = async (id: number) => {
-        if (!confirm("Diese Fahrt wirklich löschen?")) return;
+        if (!confirm("Diese Tour wirklich löschen?")) return;
         await supabase.from("fahrten").delete().eq("id", id);
         ladeFahrten();
     };
@@ -432,7 +432,7 @@ export default function Home() {
                                 <span>Datum</span>
                                 <button
                                     className="btn btn-sm btn-outline-secondary ms-2"
-                                    title="Zur ältesten Fahrt scrollen"
+                                    title="Zur ältesten Tour scrollen"
                                     onClick={() => {
                                         if (tableContainerRef.current) {
                                             tableContainerRef.current.scrollTop = 0;

@@ -2,12 +2,12 @@
 
 import {supabase} from "@/lib/supabaseClient";
 import React, {RefObject, useState} from "react";
-import {Fahrt} from "@/interfaces/fahrt";
+import Tour from "@/interfaces/tour";
 import {Fahrer} from "@/components/Fahrerverwaltung";
 
 type Props = {
     anwesenheiten: Array<Set<string>>,
-    daten: Fahrt[],
+    daten: Tour[],
     fahrerListe: Fahrer[],
     setDaten: (d: any[]) => void,
     setNeuerTagAktiv: (v: boolean) => void,
