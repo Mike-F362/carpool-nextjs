@@ -78,7 +78,7 @@ export default function NeuerTag({
                     </select>
                 </div>
             </div>
-            <button className="btn btn-success mt-2" onClick={fahrtSpeichern}>Speichern</button>
+            <button className="btn btn-success mt-2" onClick={() => fahrtSpeichern(datum, aktuelleAnwesenheit, aktuellerVorschlag)}>Speichern</button>
         </div>
     );
 }

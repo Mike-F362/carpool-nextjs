@@ -230,9 +230,9 @@ export default function Home() {
             fahrer_b: fahrer.fahrerB
         });
 
-        setDaten([fahrt, ...daten]);
-        setAnwesenheiten([aktuelleAnwesenheit, ...anwesenheiten]);
         setNeuerTagAktiv(false);
+
+        ladeFahrten();
 
         setTimeout(() => {
             tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
