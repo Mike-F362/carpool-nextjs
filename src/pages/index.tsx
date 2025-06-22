@@ -2,14 +2,12 @@ import Head from 'next/head';
 import React, {useEffect, useRef, useState} from 'react';
 import {supabase} from '@/lib/supabaseClient';
 import {tagsManifest} from "next/dist/server/lib/incremental-cache/tags-manifest.external";
-// import styles from './index.module.css';
-import Fahrerverwaltung, {Fahrer} from "@/components/Fahrerverwaltung";
+import styles from './index.module.css';
+import Fahrerverwaltung from "@/components/Fahrerverwaltung";
 import NeuerTag from "@/components/new_day";
-import {Tour} from "@/interfaces/tour";
-
-// const startpunkt1 = ["Anna", "Bernd", "Carla"];
-// const zwischenstopp = startpunkt1.concat(["Dana", "Kurt"]);
-// const mitglieder = Array.from(new Set([...startpunkt1, ...zwischenstopp]));
+import Tour from "@/interfaces/tour";
+import Fahrtentabelle from "@/components/tour_table";
+import Driver from "@/components/driver";
 
 const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
@@ -31,8 +29,8 @@ export default function Home() {
 
     const tableContainerRef = useRef(null);
 
-    const [fahrerListe, setFahrerListe] = useState<Fahrer[]>([]);
-    const [mitglieder, setMitglieder] = useState<Fahrer[]>([]);
+    const [fahrerListe, setFahrerListe] = useState<Driver[]>([]);
+    const [mitglieder, setMitglieder] = useState<Driver[]>([]);
     const [startpunkt1, setStartpunkt1] = useState<string[]>([]);
     const [zwischenstopp, setZwischenstopp] = useState<string[]>([]);
 
@@ -189,7 +187,7 @@ export default function Home() {
         const ladeFahrer = async () => {
             const {data} = await supabase.from("fahrer").select("*");
             if (data) {
-                const fahrer: Fahrer[] = data.map(e => {
+                const fahrer: Driver[] = data.map(e => {
                     return {
                         id: e.id,
                         name: e.name,
@@ -220,7 +218,7 @@ export default function Home() {
         setAktuellerVorschlag({fahrerA: "", fahrerB: ""});
     };
 
-    const fahrtSpeichern = async () => {
+    const fahrtSpeichern = async (datum, aktuelleAnwesenheit, aktuellerVorschlag) => {
         const anwesend = Array.from(aktuelleAnwesenheit);
         const fahrer = aktuellerVorschlag;
         const fahrt: Tour = {datum, ...fahrer};
@@ -377,26 +375,25 @@ export default function Home() {
             </div>
 
             {/*
+                <div className="input-group" style={{width: '200px'}}>
+                    <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
+                    <select
+                        id="pageSize"
+                        className="form-select"
+                        value={pageSize}
+                        onChange={e => {
+                            const val = parseInt(e.target.value);
+                            setPageSize(val);
+                            setVisibleRows(val);
+                        }}
+                    >
+                        {[10, 20, 40, 60, 100].map(size => (
+                            <option key={size} value={size}>{size}</option>
+                        ))}
+                    </select>
+                </div>
+            */}
 
-            <div className="input-group" style={{width: '200px'}}>
-                <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
-                <select
-                    id="pageSize"
-                    className="form-select"
-                    value={pageSize}
-                    onChange={e => {
-                        const val = parseInt(e.target.value);
-                        setPageSize(val);
-                        setVisibleRows(val);
-                    }}
-                >
-                    {[10, 20, 40, 60, 100].map(size => (
-                        <option key={size} value={size}>{size}</option>
-                    ))}
-                </select>
-            </div>
-
-*/}
             {/*<div style={{height: '1rem'}}></div>*/}
 
             {neuerTagAktiv && (

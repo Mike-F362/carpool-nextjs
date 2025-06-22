@@ -3,23 +3,23 @@
 import {supabase} from "@/lib/supabaseClient";
 import React, {RefObject, useState} from "react";
 import Tour from "@/interfaces/tour";
-import {Fahrer} from "@/components/Fahrerverwaltung";
+import Driver from "@/components/driver";
 
 type Props = {
     anwesenheiten: Array<Set<string>>,
     daten: Tour[],
-    fahrerListe: Fahrer[],
+    fahrerListe: Driver[],
     setDaten: (d: any[]) => void,
     setNeuerTagAktiv: (v: boolean) => void,
-    mitglieder: Fahrer[],
+    mitglieder: Driver[],
     setAnwesenheiten: (liste: Set<string>[]) => void,
     startpunkt1: string[],
     tableContainerRef: React.RefObject<HTMLDivElement>,
     zwischenstopp: string[],
-    fahrtSpeichern: () => void,
+    fahrtSpeichern: (datum: Date, aktuelleAnwesenheit: Set<string>, aktuellerVorschlag: { fahrerA: string; fahrerB: string }) => void,
     datum: Date,
     simuliereFahrt: (anwesend: Set<string>, daten, anwesenheiten) => { fahrerA: string; fahrerB: string },
-    setDatum?: (value: (((prevState: Date) => Date) | Date)) => void
+    setDatum: (value: (((prevState: Date) => Date) | Date)) => void
 };
 
 export default function NeuerTag({

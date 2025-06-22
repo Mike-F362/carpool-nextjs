@@ -1,14 +1,13 @@
 "use client";
 
-import { useState } from "react";
-import { supabase } from "@/lib/supabaseClient";
-
-export interface Fahrer {id: number, name: string, startpunkt: number}
+import {useState} from "react";
+import {supabase} from "@/lib/supabaseClient";
+import Driver from "@/components/driver";
 
 type Props = {
-    fahrerListe: Fahrer[];
-    setFahrerListe: (liste: Fahrer[]) => void;
-    setMitglieder: (liste: Fahrer[]) => void;
+    fahrerListe: Driver[];
+    setFahrerListe: (liste: Driver[]) => void;
+    setMitglieder: (liste: Driver[]) => void;
 };
 
 export default function Fahrerverwaltung({
@@ -21,7 +20,7 @@ export default function Fahrerverwaltung({
     const aktualisieren = async () => {
         const { data } = await supabase.from("fahrer").select("*");
         if (data) {
-            const fahrer: Fahrer[] = data.map(e => {return {
+            const fahrer: Driver[] = data.map(e => {return {
                     id: e.id,
                     name: e.name,
                     startpunkt: e.startpunkt
@@ -41,7 +40,7 @@ export default function Fahrerverwaltung({
         aktualisieren();
     };
 
-    const entfernen = async (fahrer: Fahrer) => {
+    const entfernen = async (fahrer: Driver) => {
         if (!confirm(`Fahrer #${fahrer.id} '${fahrer.name}' wirklich löschen?`)) return;
         await supabase.from("fahrer").delete().eq("id", fahrer.id);
         aktualisieren();
