@@ -1,0 +1,14 @@
+thead th {
+    position: sticky;
+    top: 0;
+    background: white;
+    z-index: 2;
+}
+.collapse-wrapper > div {
+    transition: max-height 0.5s ease;
+    overflow: hidden;
+}
+
+.clickable-row:hover {
+    background-color: #f8f9fa;
+}

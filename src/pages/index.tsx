@@ -313,23 +313,6 @@ export default function Home() {
                     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
                     rel="stylesheet"
                 />
-                <style>{`
-          thead th {
-            position: sticky;
-            top: 0;
-            background: white;
-            z-index: 2;
-          }
-          .collapse-wrapper > div {
-              transition: max-height 0.5s ease;
-              overflow: hidden;
-            }
-
-          .clickable-row:hover {
-              background-color: #f8f9fa;
-          }
-          
-        `}</style>
             </Head>
             <h1 className="mb-3">Carpool Planner</h1>
 
