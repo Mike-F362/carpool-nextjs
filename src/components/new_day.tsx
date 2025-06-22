@@ -29,7 +29,6 @@ export default function NeuerTag({
                                      setDaten,
                                      setNeuerTagAktiv,
                                      mitglieder,
-                                     setAnwesenheiten,
                                      startpunkt1,
                                      tableContainerRef,
                                      fahrtSpeichern,
