@@ -3,6 +3,7 @@
 import React from "react";
 
 import Driver from "@/components/driver";
+import styles from "./tour_table.module.css";
 
 type Props = {
     daten: any[],
@@ -30,38 +31,34 @@ export default function Fahrtentabelle({
     return (
         <div
             className="table-responsive mb-3"
-            style={{maxHeight: "500px", overflowY: "auto"}}
+            style={{maxHeight: "100%", height:"100%", overflowY: "auto"}}
             ref={tableContainerRef}
             onScroll={handleScroll}
         >
-            <table className="table table-bordered table-sm">
-                <thead>
+            <table className={`table table-bordered table-sm able-hover ${styles.tableSticky}`}>
+                <thead className={styles.stickyMobile}>
                 <tr>
-                    <th className="text-nowrap text-end" style={{verticalAlign: "middle"}}>
-                        <div className="d-flex justify-content-between align-items-center">
-                            <span>Datum</span>
-                            <button
-                                className="btn btn-sm btn-outline-secondary ms-2"
-                                title="Zur ältesten Tour scrollen"
-                                onClick={() => {
-                                    if (tableContainerRef.current) {
-                                        tableContainerRef.current.scrollTop = 0;
-                                    }
-                                }}
-                            >
-                                ↑
-                            </button>
-                        </div>
+                    <th>
+                        Datum
+                        <button
+                            className="btn btn-sm btn-outline-secondary ms-2"
+                            title="Zur neuesten Tour scrollen"
+                            onClick={() => {
+                                if (tableContainerRef.current) {
+                                    tableContainerRef.current.scrollTop = 0;
+                                }
+                            }}
+                        >
+                            ↑
+                        </button>
                     </th>
-
                     {fahrerListe.map(fahrer => (
                         <th key={fahrer.name} className="d-sm-table-cell">{fahrer.name}</th>
                     ))}
-
-                    <th className="text-end" style={{width: "1%"}}></th>
-
+                    <th className={styles.deleteButton}></th>
                 </tr>
                 </thead>
+
                 <tbody>
                 {[...daten].map((f, i) => {
                     const zeileIstOffen = geöffneteZeilen.includes(i);
@@ -97,7 +94,7 @@ export default function Fahrtentabelle({
                                 </td>
                             </tr>
                             {zeileIstOffen && (
-                                <tr>
+                                <tr className={styles.fahrerInfoMobile}>
                                     <td colSpan={fahrerListe.length + 1} className="bg-light small">
                                         <strong>Fahrer:</strong> {f.fahrerA} → {f.fahrerB}
                                     </td>

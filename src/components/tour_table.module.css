@@ -1,0 +1,43 @@
+.wrapper {
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* Sticky Table Header */
+.tableSticky thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 2;
+}
+
+/* Schmale Aktionsspalte */
+.deleteButton {
+    width: 1%;
+    white-space: nowrap;
+    text-align: right;
+}
+
+/* Responsive Fahrer-Detailzeile */
+.fahrerInfoMobile {
+    display: none;
+    background: #f1f1f1;
+    text-align: center;
+    font-size: 0.9rem;
+    padding: 0.25rem;
+}
+
+/* Nur auf kleinen Geräten sichtbar */
+@media (max-width: 576px) {
+    .hideOnMobile {
+        display: none;
+    }
+
+    .fahrerInfoMobile {
+        display: table-row;
+    }
+
+    .stickyMobile th {
+        background-color: #fff;
+    }
+}
