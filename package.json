@@ -8,6 +8,7 @@
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.0.0",
+    "bootstrap": "^5.3.7",
     "next": "latest",
     "react": "latest",
     "react-dom": "latest"

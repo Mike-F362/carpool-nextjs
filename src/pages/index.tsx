@@ -1,3 +1,5 @@
+"use client";
+
 import Head from 'next/head';
 import React, {useEffect, useRef, useState} from 'react';
 import {supabase} from '@/lib/supabaseClient';
@@ -8,6 +10,9 @@ import NeuerTag from "@/components/new_day";
 import Tour from "@/interfaces/tour";
 import Fahrtentabelle from "@/components/tour_table";
 import Driver from "@/components/driver";
+import AuthModal from "@/components/auth_modal";
+import UserCreateModal from "@/components/user_create_modal";
+import Link from "next/link";
 
 const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
@@ -21,8 +26,6 @@ export default function Home() {
     const [log, setLog] = useState([]);
     const [fahrerVerwaltungAktiv, setFahrerVerwaltungAktiv] = useState(false);
     const [neuerTagAktiv, setNeuerTagAktiv] = useState(false);
-    const [aktuellerVorschlag, setAktuellerVorschlag] = useState({fahrerA: "", fahrerB: ""});
-    const [aktuelleAnwesenheit, setAktuelleAnwesenheit] = useState(new Set<string>());
 
     const [pageSize, setPageSize] = useState(20);
     const [visibleRows, setVisibleRows] = useState(pageSize);
@@ -35,6 +38,33 @@ export default function Home() {
     const [zwischenstopp, setZwischenstopp] = useState<string[]>([]);
 
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
+
+    const [session, setSession] = useState<any>(null);
+    const [user, setUser] = useState<any>(null);
+    const [isAdmin, setIsAdmin] = useState<boolean>(false);
+    const [zeigeModal, setZeigeModal] = useState(false);
+
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [showInviteAdmin, setShowInviteAdmin] = useState(false);
+
+    useEffect(() => {
+        supabase.auth.getSession().then(async ({data}) => {
+            setSession(data.session);
+            supabase.auth.getUser().then(value => {
+                const usr = value.data?.user;
+                setUser(usr);
+                setIsAdmin(usr?.user_metadata?.role === "admin");
+            });
+        });
+        supabase.auth.onAuthStateChange(async (_event, sess) => {
+            setSession(sess);
+            supabase.auth.getUser().then(value => {
+                const usr = value.data?.user;
+                setUser(usr);
+                setIsAdmin(usr?.user_metadata?.role === "admin");
+            });
+        });
+    }, []);
 
     function berechneFahrerQuote(anwesend: Set<string>, daten: [Tour], anwesenheiten: [Set<string>]): Map<string, number> {
         const quotes = new Map<string, number>();
@@ -214,8 +244,6 @@ export default function Home() {
 
         setDatum(tag);
         setNeuerTagAktiv(true);
-        setAktuelleAnwesenheit(new Set());
-        setAktuellerVorschlag({fahrerA: "", fahrerB: ""});
     };
 
     const fahrtSpeichern = async (datum, aktuelleAnwesenheit, aktuellerVorschlag) => {
@@ -284,6 +312,8 @@ export default function Home() {
     }
 
     const reset = async () => {
+        if (!confirm("Wirklich ALLE Touren löschen?")) return;
+
         setDaten([]);
         setAnwesenheiten([]);
         setLog([]);
@@ -306,110 +336,133 @@ export default function Home() {
     };
 
     return (
-        <div className="container py-4">
+        <div className="d-flex flex-column vh-100">
             <Head>
-                <title>Carpool Planner</title>
+                <title>Fahrgemeinschaftsplaner</title>
                 <link
                     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
                     rel="stylesheet"
                 />
             </Head>
-            <h1 className="mb-3">Carpool Planner</h1>
+            <header className="p-2 ">
+                <h1>Fahrgemeinschaftsplaner</h1>
+                {/*    TODO: Version rechtsbündig*/}
+            </header>
 
-            <div className="d-flex gap-2 mb-3">
-                <button
-                    className="btn btn-primary"
-                    onClick={neuerTagAktiv ? () => setNeuerTagAktiv(false) : neuerTagStarten}
-                >
-                    {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
-                </button>
-
-                <button
-                    className="btn btn-outline-secondary d-flex align-items-center gap-2"
-                    onClick={() => setFahrerVerwaltungAktiv(v => !v)}
-                >
-                    Fahrerverwaltung
-                    <span style={{
-                        display: "inline-block",
-                        transform: fahrerVerwaltungAktiv ? "rotate(180deg)" : "rotate(0deg)",
-                        transition: "transform 0.3s ease"
-                    }}>
-    ▼
-                    </span>
-                </button>
+            <div className="p-2 border-bottom bg-light text-end">
+                {session ? (
+                    <button className="btn btn-sm btn-outline-secondary" onClick={() => supabase.auth.signOut()}>
+                        Abmelden
+                    </button>
+                ) : (
+                    <button className="btn btn-sm btn-outline-primary" onClick={() => setZeigeModal(true)}>
+                        Anmelden
+                    </button>
+                )}
             </div>
 
-            <div className="d-flex gap-2 mb-3">
-                <button className="btn btn-warning mb-3" onClick={reset}>Reset</button>
-                <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
-            </div>
+            {zeigeModal && <AuthModal onClose={() => setZeigeModal(false)}/>}
 
-            <div
-                className={`collapse-wrapper ${fahrerVerwaltungAktiv ? "show" : ""}`}
-                style={{overflow: "hidden", transition: "max-height 0.5s ease"}}
-            >
-                <div style={{maxHeight: fahrerVerwaltungAktiv ? "1000px" : "0"}}>
-                    <Fahrerverwaltung
-                        fahrerListe={fahrerListe}
-                        setFahrerListe={setFahrerListe}
-                        setMitglieder={setMitglieder}
-                    />
-                </div>
-            </div>
+            {session ? (
+                <main className="d-flex flex-column vh-100">
 
-            {/*
-                <div className="input-group" style={{width: '200px'}}>
-                    <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
-                    <select
-                        id="pageSize"
-                        className="form-select"
-                        value={pageSize}
-                        onChange={e => {
-                            const val = parseInt(e.target.value);
-                            setPageSize(val);
-                            setVisibleRows(val);
-                        }}
-                    >
-                        {[10, 20, 40, 60, 100].map(size => (
-                            <option key={size} value={size}>{size}</option>
-                        ))}
-                    </select>
-                </div>
-            */}
+                    {isAdmin && (
+                        <ul className="list-group">
+                            <li className="list-group">
+                                <button className="btn btn-outline-success btn-sm" onClick={() => setShowCreateModal(true)}>
+                                    <Link href="/fahrer_admin" className="nav-link">Fahrer</Link>
+                                </button>
+                            </li>
+                            <li className="list-group">
+                                <button className="btn btn-outline-info btn-sm" onClick={() => setShowInviteAdmin(true)}>
+                                    <Link href="/invite_admin" className="nav-link">Einladungen</Link>
+                                </button>
+                            </li>
+                            <li className="list-group">
+                                <button className="btn btn-outline-danger btn-sm" onClick={() => setShowCreateModal(true)}>
+                                    <Link href="/user_admin" className="nav-link">Benutzer</Link>
+                                </button>
+                            </li>
+                            <li className="list-group">
+                                <button className="btn btn-outline-warning warning mb-3" onClick={reset}>Reset</button>
+                            </li>
+                        </ul>
+                    )}
 
-            {/*<div style={{height: '1rem'}}></div>*/}
+                    <div style={{height: '1rem'}}></div>
 
-            {neuerTagAktiv && (
-                <NeuerTag
-                    datum={datum}
-                    anwesenheiten={anwesenheiten}
-                    daten={daten}
-                    fahrerListe={fahrerListe}
-                    mitglieder={mitglieder}
-                    simuliereFahrt={simuliereFahrt}
-                    setAnwesenheiten={setAnwesenheiten}
-                    setDaten={setDaten}
-                    setDatum={setDatum}
-                    setNeuerTagAktiv={setNeuerTagAktiv}
-                    startpunkt1={startpunkt1}
-                    tableContainerRef={tableContainerRef}
-                    zwischenstopp={zwischenstopp}
-                    fahrtSpeichern={fahrtSpeichern}
-                />
+                    {/*<div className="p-2">*/}
+                    <div className="d-flex gap-2 mb-3">
+                        <button
+                            className="btn btn-primary mb-3"
+                            onClick={neuerTagAktiv ? () => setNeuerTagAktiv(false) : neuerTagStarten}
+                        >
+                            {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
+                        </button>
+                        <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
+                        {
+                            <div className="input-group mb-3" style={{width: '200px'}}>
+                                <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
+                                <select
+                                    id="pageSize"
+                                    className="form-select"
+                                    value={pageSize}
+                                    onChange={e => {
+                                        const val = parseInt(e.target.value);
+                                        setPageSize(val);
+                                        setVisibleRows(val);
+                                    }}
+                                >
+                                    {[10, 20, 40, 60, 100].map(size => (
+                                        <option key={size} value={size}>{size}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        }
+                    </div>
+
+                    {/*<div style={{height: '1rem'}}></div>*/}
+
+                    <div className="flex-grow-1 overflow-auto">
+
+                        {neuerTagAktiv && (
+                            <NeuerTag
+                                datum={datum}
+                                anwesenheiten={anwesenheiten}
+                                daten={daten}
+                                fahrerListe={fahrerListe}
+                                mitglieder={mitglieder}
+                                simuliereFahrt={simuliereFahrt}
+                                setAnwesenheiten={setAnwesenheiten}
+                                setDaten={setDaten}
+                                setDatum={setDatum}
+                                setNeuerTagAktiv={setNeuerTagAktiv}
+                                startpunkt1={startpunkt1}
+                                tableContainerRef={tableContainerRef}
+                                zwischenstopp={zwischenstopp}
+                                fahrtSpeichern={fahrtSpeichern}
+                            />
+                        )}
+
+                        <Fahrtentabelle
+                            daten={daten}
+                            fahrerListe={fahrerListe}
+                            anwesenheiten={anwesenheiten}
+                            pageSize={pageSize}
+                            entferneFahrt={entferneFahrt}
+                            tableContainerRef={tableContainerRef}
+                            handleScroll={handleScroll}
+                            geöffneteZeilen={geöffneteZeilen}
+                            zeileUmschalten={zeileUmschalten}
+                        />
+
+                    </div>
+
+                </main>
+
+            ) : (
+                <div className="container text-center mt-5 text-muted">Bitte anmelden, um die App zu verwenden.</div>
             )}
-
-            <Fahrtentabelle
-                daten={daten}
-                fahrerListe={fahrerListe}
-                anwesenheiten={anwesenheiten}
-                pageSize={pageSize}
-                entferneFahrt={entferneFahrt}
-                tableContainerRef={tableContainerRef}
-                handleScroll={handleScroll}
-                geöffneteZeilen={geöffneteZeilen}
-                zeileUmschalten={zeileUmschalten}
-            />
-
         </div>
     );
 }

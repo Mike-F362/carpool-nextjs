@@ -60,7 +60,9 @@ export default function Fahrtentabelle({
                 </thead>
 
                 <tbody>
-                {[...daten].map((f, i) => {
+                {
+                    [...daten].slice(-pageSize).map((f, i) => {
+                        // [...daten].map((f, i) => {
                     const zeileIstOffen = geöffneteZeilen.includes(i);
                     const anwesenheitszellen = fahrerListe.map(m => (
                         <td key={m.name} className={f.fahrerA === m.name ? "table-warning" : f.fahrerB === m.name ? "table-primary" : ""}>
