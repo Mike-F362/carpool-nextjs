@@ -2,7 +2,7 @@
 
 import {useState} from "react";
 import {supabase} from "@/lib/supabaseClient";
-import Driver from "@/components/driver";
+import Driver from "@/interfaces/driver";
 
 type Props = {
     fahrerListe: Driver[];

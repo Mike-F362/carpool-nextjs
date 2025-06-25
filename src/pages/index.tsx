@@ -9,7 +9,7 @@ import Fahrerverwaltung from "@/components/Fahrerverwaltung";
 import NeuerTag from "@/components/new_day";
 import Tour from "@/interfaces/tour";
 import Fahrtentabelle from "@/components/tour_table";
-import Driver from "@/components/driver";
+import Driver from "@/interfaces/driver";
 import AuthModal from "@/components/auth_modal";
 import UserCreateModal from "@/components/user_create_modal";
 import Link from "next/link";
@@ -218,11 +218,12 @@ export default function Home() {
             const {data} = await supabase.from("fahrer").select("*");
             if (data) {
                 const fahrer: Driver[] = data.map(e => {
-                    return {
-                        id: e.id,
-                        name: e.name,
-                        startpunkt: e.startpunkt
-                    }
+                    return e as Driver;
+                    // {
+                    //     id: e.id,
+                    //     name: e.name,
+                    //     startpunkt: e.startpunkt
+                    // }
                 });
                 const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.name);
                 setStartpunkt1(sp1)
@@ -364,7 +365,7 @@ export default function Home() {
             {zeigeModal && <AuthModal onClose={() => setZeigeModal(false)}/>}
 
             {session ? (
-                <main className="d-flex flex-column vh-100">
+                <main className="d-flex flex-column overflow-hidden ">
 
                     {isAdmin && (
                         <ul className="list-group">
@@ -424,7 +425,6 @@ export default function Home() {
                     {/*<div style={{height: '1rem'}}></div>*/}
 
                     <div className="flex-grow-1 overflow-auto">
-
                         {neuerTagAktiv && (
                             <NeuerTag
                                 datum={datum}
@@ -449,6 +449,7 @@ export default function Home() {
                             fahrerListe={fahrerListe}
                             anwesenheiten={anwesenheiten}
                             pageSize={pageSize}
+                            visibleRows={visibleRows}
                             entferneFahrt={entferneFahrt}
                             tableContainerRef={tableContainerRef}
                             handleScroll={handleScroll}

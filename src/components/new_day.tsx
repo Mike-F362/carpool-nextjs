@@ -3,7 +3,7 @@
 import {supabase} from "@/lib/supabaseClient";
 import React, {RefObject, useState} from "react";
 import Tour from "@/interfaces/tour";
-import Driver from "@/components/driver";
+import Driver from "@/interfaces/driver";
 
 type Props = {
     anwesenheiten: Array<Set<string>>,

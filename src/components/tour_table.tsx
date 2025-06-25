@@ -2,7 +2,7 @@
 
 import React from "react";
 
-import Driver from "@/components/driver";
+import Driver from "@/interfaces/driver";
 import styles from "./tour_table.module.css";
 
 type Props = {
@@ -14,7 +14,8 @@ type Props = {
     tableContainerRef: React.RefObject<HTMLDivElement>,
     handleScroll?: () => void,
     geöffneteZeilen?: number[],
-    zeileUmschalten?: (index: number) => void
+    zeileUmschalten?: (index: number) => void,
+    visibleRows?: number
 };
 
 export default function Fahrtentabelle({
@@ -26,12 +27,13 @@ export default function Fahrtentabelle({
                                            tableContainerRef,
                                            handleScroll,
                                            geöffneteZeilen,
-                                           zeileUmschalten
+                                           zeileUmschalten,
+                                           visibleRows
                                        }: Props) {
     return (
         <div
             className="table-responsive mb-3"
-            style={{maxHeight: "100%", height:"100%", overflowY: "auto"}}
+            style={{maxHeight: "100%", height: "100%", overflowY: "auto"}}
             ref={tableContainerRef}
             onScroll={handleScroll}
         >
@@ -70,41 +72,41 @@ export default function Fahrtentabelle({
                         </td>
                     ));
 
-                    return (
-                        <React.Fragment key={i}>
-                            <tr
-                                className="clickable-row"
-                                onClick={() => zeileUmschalten(i)}
-                                style={{cursor: "pointer"}}
-                            >
-                                <td>
-                                    {new Date(f.datum || "").toLocaleDateString("de-DE", {
-                                        weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit"
-                                    })}
-                                </td>
-                                {anwesenheitszellen}
-                                <td className="text-end">
-                                    <button
-                                        className="btn btn-sm  btn-outline-danger"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            entferneFahrt(f.id);
-                                        }}
-                                    >
-                                        ✕
-                                    </button>
-                                </td>
-                            </tr>
-                            {zeileIstOffen && (
-                                <tr className={styles.fahrerInfoMobile}>
-                                    <td colSpan={fahrerListe.length + 1} className="bg-light small">
-                                        <strong>Fahrer:</strong> {f.fahrerA} → {f.fahrerB}
+                        return (
+                            <React.Fragment key={i}>
+                                <tr
+                                    className="clickable-row"
+                                    onClick={() => zeileUmschalten(i)}
+                                    style={{cursor: "pointer"}}
+                                >
+                                    <td>
+                                        {new Date(f.datum || "").toLocaleDateString("de-DE", {
+                                            weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit"
+                                        })}
+                                    </td>
+                                    {anwesenheitszellen}
+                                    <td className="text-end">
+                                        <button
+                                            className="btn btn-sm  btn-outline-danger"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                entferneFahrt(f.id);
+                                            }}
+                                        >
+                                            ✕
+                                        </button>
                                     </td>
                                 </tr>
-                            )}
-                        </React.Fragment>
-                    );
-                })}
+                                {zeileIstOffen && (
+                                    <tr className={styles.fahrerInfoMobile}>
+                                        <td colSpan={fahrerListe.length + 1} className="bg-light small">
+                                            <strong>Fahrer:</strong> {f.fahrerA} → {f.fahrerB}
+                                        </td>
+                                    </tr>
+                                )}
+                            </React.Fragment>
+                        );
+                    })}
                 </tbody>
             </table>
         </div>

@@ -1,17 +1,19 @@
 // 📁 src/pages/fahrer_admin.tsx
-import { useEffect, useState } from "react";
+import {useEffect, useState} from "react";
 import AdminLayout from "@/components/admin/layout";
 
 interface Fahrer {
     id: string;
     name: string;
     startpunkt: string;
+    label: string;
 }
 
 export default function FahrerAdminPage() {
     const [fahrer, setFahrer] = useState<Fahrer[]>([]);
     const [name, setName] = useState("");
     const [startpunkt, setStartpunkt] = useState("1");
+    const [label, setLabel] = useState("");
 
     const fetchFahrer = async () => {
         const res = await fetch("/api/fahrer/list");
@@ -26,18 +28,19 @@ export default function FahrerAdminPage() {
     const handleCreate = async () => {
         await fetch("/api/fahrer/create", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ name, startpunkt })
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({name, startpunkt, label})
         });
         setName("");
+        setLabel("");
         fetchFahrer();
     };
 
     const handleDelete = async (id: string) => {
         await fetch("/api/fahrer/delete", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id })
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id})
         });
         fetchFahrer();
     };
@@ -45,8 +48,8 @@ export default function FahrerAdminPage() {
     const handleUpdate = async (id: string, field: keyof Fahrer, value: string) => {
         await fetch("/api/fahrer/update", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id, [field]: value })
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id, [field]: value})
         });
         fetchFahrer();
     };
@@ -64,6 +67,20 @@ export default function FahrerAdminPage() {
                         onChange={(e) => setName(e.target.value)}
                     />
                 </div>
+            </div>
+            <div className="mb-3 row g-2 align-items-center">
+                <div className="col">
+                    <div className="col gap-lg-2">
+                        <input
+                            className="form-control"
+                            placeholder="Label"
+                            value={label}
+                            onChange={(e) => setLabel(e.target.value)}
+                        />
+                    </div>
+                </div>
+            </div>
+            <div className="mb-3 row g-2 align-items-center">
                 <div className="col-auto">
                     <select
                         className="form-select"
@@ -74,17 +91,20 @@ export default function FahrerAdminPage() {
                         <option value="2">Zwischenstopp</option>
                     </select>
                 </div>
-                <div className="col-auto">
-                    <button className="btn btn-primary" onClick={handleCreate} disabled={!name}>
-                        Hinzufügen
-                    </button>
-                </div>
+            </div>
+            <div className="mb-3 row g-2 align-items-lg-end">
+                    <div className="col">
+                        <button className="btn btn-primary pull-right" onClick={handleCreate} disabled={!name || !label}>
+                            Hinzufügen
+                        </button>
+                    </div>
             </div>
 
             <table className="table">
                 <thead>
                 <tr>
                     <th>Name</th>
+                    <th>Label</th>
                     <th>Startpunkt</th>
                     <th></th>
                 </tr>
@@ -97,6 +117,13 @@ export default function FahrerAdminPage() {
                                 className="form-control"
                                 value={f.name}
                                 onChange={(e) => handleUpdate(f.id, "name", e.target.value)}
+                            />
+                        </td>
+                        <td>
+                            <input
+                                className="form-control"
+                                value={f.label}
+                                onChange={(e) => handleUpdate(f.id, "label", e.target.value)}
                             />
                         </td>
                         <td>
