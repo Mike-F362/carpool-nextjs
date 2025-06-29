@@ -1,0 +1,60 @@
+/* Header.module.css */
+
+.headerContainer {
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+/* Titelzeile (Fahrgemeinschaftsplaner + Version) */
+.titleRow {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    padding: 0.5rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+    gap: 1rem;
+    white-space: nowrap; /* verhindert Zeilenumbruch */
+    /*margin-bottom: 50px;*/
+}
+
+.titleRow1 {
+    padding: 0.5rem 1rem 0.25rem 1rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+/* AppVersion rechts ausrichten, auch wenn sie in neue Zeile fällt */
+.version {
+    font-size: 0.875rem;
+    color: #6c757d;
+    white-space: nowrap;
+    margin-left: auto;
+}
+
+.version1 {
+    font-size: 0.875rem;
+    color: #6c757d;
+    white-space: nowrap;
+}
+
+/* Menüzeile (Hamburger, E-Mail, Logout) */
+.menuRow {
+    /*display: flex;*/
+    /*justify-content: space-between;*/
+    /*align-items: center;*/
+    /*padding: 1rem 1rem 0.5rem 1rem;*/
+}
+
+
+/* Responsive Anpassung für kleine Displays */
+@media (max-width: 576px) {
+    .titleRow {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .menuRow {
+        /*flex-direction: column-reverse;*/
+        /*align-items: flex-end;*/
+        /*gap: 0.5rem;*/
+    }
+}
