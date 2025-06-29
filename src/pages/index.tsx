@@ -13,13 +13,16 @@ import Driver from "@/interfaces/driver";
 import AuthModal from "@/components/auth_modal";
 import UserCreateModal from "@/components/user_create_modal";
 import Link from "next/link";
+import FahrerVorschlag from "@/interfaces/driver_suggestion";
+import Header from "@/components/header";
+import AppVersion from "@/components/app_version";
 
 const eqSet = (xs: Set<string>, ys: Set<string>) =>
     xs.size === ys.size &&
     [...xs].every((x) => ys.has(x));
 
 export default function Home() {
-    const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<string>>>([]);
+    const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<number>>>([]);
     const [daten, setDaten] = useState<Array<Tour>>([]);
     const [datum, setDatum] = useState<Date>();
 
@@ -34,8 +37,8 @@ export default function Home() {
 
     const [fahrerListe, setFahrerListe] = useState<Driver[]>([]);
     const [mitglieder, setMitglieder] = useState<Driver[]>([]);
-    const [startpunkt1, setStartpunkt1] = useState<string[]>([]);
-    const [zwischenstopp, setZwischenstopp] = useState<string[]>([]);
+    const [startpunkt1, setStartpunkt1] = useState<number[]>([]);
+    const [zwischenstopp, setZwischenstopp] = useState<number[]>([]);
 
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
 
@@ -70,12 +73,16 @@ export default function Home() {
     async function ladeFahrten() {
         const {data} = await supabase.from("fahrten").select("*").order("datum", {ascending: true});
         if (data) {
-            setDaten(data.map(d => ({
+            const tours = data.map(d => ({
                 id: d.id,
                 datum: new Date(d.datum),
-                fahrerA: d.fahrer_a, fahrerB: d.fahrer_b
-            })));
-            setAnwesenheiten(data.map(d => new Set(d.anwesenheit)));
+                anwesend_ids: d.anwesend_ids,
+                fahrerA_id: d.fahrerA_id,
+                fahrerB_id: d.fahrerB_id
+            }));
+            setDaten(tours);
+            console.log(tours);
+            setAnwesenheiten(tours.map(d => new Set(d.anwesend_ids)));
         }
     }
 
@@ -87,17 +94,15 @@ export default function Home() {
         const ladeFahrer = async () => {
             const {data} = await supabase.from("fahrer").select("*");
             if (data) {
-                const fahrer: Driver[] = data.map(e => {
-                    return e as Driver;
-                    // {
-                    //     id: e.id,
-                    //     name: e.name,
-                    //     startpunkt: e.startpunkt
-                    // }
-                });
-                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.name);
+                const fahrer: Driver[] = data.map(e => ({
+                    id: e.id,
+                    name: e.name,
+                    label: e.label,
+                    startpunkt: e.startpunkt
+                }));
+                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
                 setStartpunkt1(sp1)
-                const zw = fahrer.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.name);
+                const zw = fahrer.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
                 setZwischenstopp(sp1.concat(zw));
                 setFahrerListe(fahrer);
                 setMitglieder(fahrer);
@@ -108,7 +113,10 @@ export default function Home() {
 
     const neuerTagStarten = () => {
         const heute = new Date();
-        let tag = new Date(heute);
+        const lastDate = daten.at(0)?.datum;
+
+        let tag = lastDate > heute ? new Date(lastDate) : new Date(heute);
+
         do {
             tag.setDate(tag.getDate() + 1);
         } while (tag.getDay() === 0 || tag.getDay() === 6); // Sa+So überspringen
@@ -117,17 +125,16 @@ export default function Home() {
         setNeuerTagAktiv(true);
     };
 
-    const fahrtSpeichern = async (datum, aktuelleAnwesenheit, aktuellerVorschlag) => {
-        const anwesend = Array.from(aktuelleAnwesenheit);
-        const fahrer = aktuellerVorschlag;
-        const fahrt: Tour = {datum, ...fahrer};
-
-        await supabase.from("fahrten").insert({
+    const fahrtSpeichern = async (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: FahrerVorschlag) => {
+        const anwesend_ids = Array.from(aktuelleAnwesenheit);
+        const driverSuggestion = aktuellerVorschlag;
+        const fahrt: Tour = {
             datum,
-            anwesenheit: anwesend,
-            fahrer_a: fahrer.fahrerA,
-            fahrer_b: fahrer.fahrerB
-        });
+            anwesend_ids,
+            ...driverSuggestion,
+        };
+
+        await supabase.from("fahrten").insert(fahrt);
 
         setNeuerTagAktiv(false);
 
@@ -171,6 +178,17 @@ export default function Home() {
         );
     };
 
+    function isSameAnwesenheit(
+        fahrtAnwesend: string[],
+        selectedAnwesend: string[],
+        zwischenIds: Set<string>
+    ): boolean {
+        const filter = (arr: string[]) => arr.filter(id => !zwischenIds.has(id)).sort();
+        const a = filter(fahrtAnwesend);
+        const b = filter(selectedAnwesend);
+        return JSON.stringify(a) === JSON.stringify(b);
+    }
+
     return (
         <div className="d-flex flex-column vh-100">
             <Head>
@@ -180,16 +198,15 @@ export default function Home() {
                     rel="stylesheet"
                 />
             </Head>
-            <header className="p-2 ">
-                <h1>Fahrgemeinschaftsplaner</h1>
-                {/*    TODO: Version rechtsbündig*/}
-            </header>
 
-            <div className="p-2 border-bottom bg-light text-end">
+            <div className="p-2 border-bottom bg-light">
                 {session ? (
-                    <button className="btn btn-sm btn-outline-secondary" onClick={() => supabase.auth.signOut()}>
-                        Abmelden
-                    </button>
+                    <>
+                        <Header
+                            user={user}
+                            isAdmin={isAdmin}
+                            reset={reset}
+                        /></>
                 ) : (
                     <button className="btn btn-sm btn-outline-primary" onClick={() => setZeigeModal(true)}>
                         Anmelden
@@ -202,29 +219,6 @@ export default function Home() {
             {session ? (
                 <main className="d-flex flex-column overflow-hidden ">
 
-                    {isAdmin && (
-                        <ul className="list-group">
-                            <li className="list-group">
-                                <button className="btn btn-outline-success btn-sm" onClick={() => setShowCreateModal(true)}>
-                                    <Link href="/fahrer_admin" className="nav-link">Fahrer</Link>
-                                </button>
-                            </li>
-                            <li className="list-group">
-                                <button className="btn btn-outline-info btn-sm" onClick={() => setShowInviteAdmin(true)}>
-                                    <Link href="/invite_admin" className="nav-link">Einladungen</Link>
-                                </button>
-                            </li>
-                            <li className="list-group">
-                                <button className="btn btn-outline-danger btn-sm" onClick={() => setShowCreateModal(true)}>
-                                    <Link href="/user_admin" className="nav-link">Benutzer</Link>
-                                </button>
-                            </li>
-                            <li className="list-group">
-                                <button className="btn btn-outline-warning warning mb-3" onClick={reset}>Reset</button>
-                            </li>
-                        </ul>
-                    )}
-
                     <div style={{height: '1rem'}}></div>
 
                     {/*<div className="p-2">*/}
@@ -235,7 +229,6 @@ export default function Home() {
                         >
                             {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
                         </button>
-                        <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
                         {
                             <div className="input-group mb-3" style={{width: '200px'}}>
                                 <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
@@ -267,7 +260,7 @@ export default function Home() {
                                 daten={daten}
                                 fahrerListe={fahrerListe}
                                 mitglieder={mitglieder}
-                                simuliereFahrt={simuliereFahrt}
+                                ladeFahrten={ladeFahrten}
                                 setAnwesenheiten={setAnwesenheiten}
                                 setDaten={setDaten}
                                 setDatum={setDatum}
