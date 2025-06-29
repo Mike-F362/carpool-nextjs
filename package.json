@@ -3,8 +3,7 @@
   "version": "1.0.0",
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "postbuild": "node scripts/postbuild.js",
+    "build": "node scripts/postbuild.js && next build",
     "start": "next start"
   },
   "dependencies": {
