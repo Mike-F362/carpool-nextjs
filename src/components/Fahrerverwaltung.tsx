@@ -18,12 +18,14 @@ export default function Fahrerverwaltung({
     const [name, setName] = useState("");
 
     const aktualisieren = async () => {
-        const { data } = await supabase.from("fahrer").select("*");
+        const {data} = await supabase.from("fahrer").select("*");
         if (data) {
-            const fahrer: Driver[] = data.map(e => {return {
+            const fahrer: Driver[] = data.map(e => {
+                return {
                     id: e.id,
                     name: e.name,
-                    startpunkt: e.startpunkt
+                    label: e.label,
+                    startpunkt: e.startpunkt,
                 }
             });
             setFahrerListe(fahrer);
@@ -35,7 +37,7 @@ export default function Fahrerverwaltung({
         e.preventDefault();
         const neuerName = name.trim();
         if (!neuerName) return;
-        await supabase.from("fahrer").insert({ name: neuerName });
+        await supabase.from("fahrer").insert({name: neuerName});
         setName("");
         aktualisieren();
     };
