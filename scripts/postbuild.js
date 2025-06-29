@@ -7,10 +7,15 @@ let gitTag = "";
 let commitHash = "";
 
 try {
-    gitTag = execSync("git describe --tags --abbrev=0").toString().trim();
-    commitHash = execSync("git rev-parse HEAD").toString().trim();
+    gitTag = execSync("git describe --tags --abbrev=0")?.toString().trim();
 } catch (e) {
-    console.warn("Git-Daten konnten nicht ermittelt werden");
+    console.warn("Could not determine Git-Tag-Data");
+}
+
+try {
+    commitHash = execSync("git rev-parse --short HEAD").toString().trim();
+} catch (e) {
+    console.warn("Could not determine Git-Commit-Data");
 }
 
 const envContent = `
@@ -19,5 +24,18 @@ NEXT_PUBLIC_GIT_TAG=${gitTag}
 NEXT_PUBLIC_COMMIT_HASH=${commitHash}
 `;
 
-fs.writeFileSync(path.resolve(__dirname, "../.env.local"), envContent.trim());
-console.log("✅ .env.local mit Versionsdaten erzeugt.");
+const envPath = path.resolve(__dirname, "../.env.local");
+const existing = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf-8") : "";
+
+const updated = existing
+    .split("\n")
+    .filter(line =>
+        !line.startsWith("NEXT_PUBLIC_APP_VERSION=") &&
+        !line.startsWith("NEXT_PUBLIC_GIT_TAG=") &&
+        !line.startsWith("NEXT_PUBLIC_COMMIT_HASH=")
+    )
+    .join("\n")
+    .trim() + "\n" + envContent.trim();
+
+fs.writeFileSync(envPath, updated);
+console.log("✅ .env.local updated.");
