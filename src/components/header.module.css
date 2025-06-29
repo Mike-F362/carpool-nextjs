@@ -38,6 +38,7 @@
 
 /* Menüzeile (Hamburger, E-Mail, Logout) */
 .menuRow {
+    padding: 0.5rem 1rem;
     /*display: flex;*/
     /*justify-content: space-between;*/
     /*align-items: center;*/
