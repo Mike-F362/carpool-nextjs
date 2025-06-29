@@ -19,14 +19,16 @@ export default function Header({
 
         <header className="border-bottom bg-light">
             {/* Obere Zeile: Titel + Version */}
-            <div className={styles.titleRow + "d-flex justify-content-between align-items-baseline flex-wrap"}>
+            {/*<div className={styles.titleRow + "d-flex justify-content-between align-items-baseline flex-wrap"}>*/}
                 <div className="w-100">
-                    <div className={`${styles.titleRow} d-flex justify-content-between align-items-baseline flex-wrap`}>
+                    <div className={`${styles.titleRow}`}>
                         <h1 className="h5 mb-0">Fahrgemeinschaftsplaner</h1>
-                        <AppVersion className={`${styles.version} text-end`} />
+                        <div className={`${styles.versionContainer}`}>
+                        <AppVersion className={`${styles.version} badge bg-secondary bg-opacity-75 ms-2 text-light text-end`} />
+                        </div>
                     </div>
                 </div>
-            </div>
+            {/*</div>*/}
 
             {/* Untere Zeile: Menü + Benutzerinfo */}
             <div className={`${styles.menuRow} badge d-flex justify-content-between align-items-center px-3 pb-2 border-top`}>
