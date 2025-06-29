@@ -5,6 +5,6 @@ COMMIT=$(git rev-parse --short HEAD)
 
 mkdir -p public
 
-echo "Pushing version to json file: { \\"version\\": \\"$VERSION\\", \\"tag\\": \\"$VERSION\\", \\"commit\\": \\"$COMMIT\\" }"
+echo "Pushing version to json file: { \"version\": \"$VERSION\", \"tag\": \"$VERSION\", \"commit\": \"$COMMIT\" }"
 
-echo "{ \\"version\\": \\"$VERSION\\", \\"tag\\": \\"$VERSION\\", \\"commit\\": \\"$COMMIT\\" }" > public/version.json
+echo "{ \"version\": \"$VERSION\", \"tag\": \"$VERSION\", \"commit\": \"$COMMIT\" }" > public/version.json
