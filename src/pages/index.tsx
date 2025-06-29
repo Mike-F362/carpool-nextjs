@@ -139,41 +139,6 @@ export default function Home() {
 
     };
 
-    const simulate = async () => {
-
-        const aktuelleAnwesenheit = new Set<string>(mitglieder.map(m => m.name));
-        const aktuellerVorschlag = simuliereFahrt(aktuelleAnwesenheit, daten, anwesenheiten);
-
-        let datum = daten.map(d => d.datum).reduce((prev, curr, index, arr) => {
-            return prev > curr ? prev : curr
-        }, new Date());
-
-        let simDatum = new Date(datum);
-        do {
-            simDatum.setDate(simDatum.getDate() + 1);
-        } while (simDatum.getDay() === 0 || simDatum.getDay() === 6); // Sa+So überspringen
-
-        // const tag = daten.length + 1;
-        const anwesend = Array.from(aktuelleAnwesenheit);
-        const fahrer = aktuellerVorschlag;
-        const fahrt: Tour = {datum: simDatum, ...fahrer};
-
-        await supabase.from("fahrten").insert({
-            datum: simDatum,
-            anwesenheit: anwesend,
-            fahrer_a: fahrer.fahrerA,
-            fahrer_b: fahrer.fahrerB
-        });
-
-        setDatum(simDatum);
-        setDaten([fahrt, ...daten]);
-        setAnwesenheiten([aktuelleAnwesenheit, ...anwesenheiten]);
-
-        setTimeout(() => {
-            tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
-        }, 100);
-    }
-
     const handleScroll = () => {
         if (!tableContainerRef.current) return;
         const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;

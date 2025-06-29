@@ -1,14 +1,13 @@
 "use client";
 
-import {supabase} from "@/lib/supabaseClient";
-import React, {RefObject, useState} from "react";
+import React, {useState} from "react";
 import Tour from "@/interfaces/tour";
 import Driver from "@/interfaces/driver";
 import FahrerVorschlag from "@/interfaces/driver_suggestion";
 import {supabase} from "@/lib/supabaseClient";
 
 type Props = {
-    anwesenheiten: Array<Set<string>>,
+    anwesenheiten: Array<Set<number>>,
     daten: Tour[],
     fahrerListe: Driver[],
     setDaten: (d: any[]) => void,
@@ -179,39 +178,121 @@ export default function NeuerTag({
         if (kopie.has(id)) kopie.delete(id);
         else kopie.add(id);
         setAktuelleAnwesenheit(kopie);
-        setAktuellerVorschlag(simuliereFahrt(kopie, daten, anwesenheiten));
+
+        if (kopie.size > 1) {
+            setAktuellerVorschlag(await berechneFahrerVorschlag(kopie, daten, anwesenheiten));
+        } else {
+            setAktuellerVorschlag({fahrerA_id: 0, fahrerB_id: 0});
+        }
     };
+
+    function getDriverLabel(id: number) {
+        return fahrerListe.find(fahrer => fahrer.id === id).label;
+    }
+
+    function getDriverQuoteSp(driver: Driver) {
+        let res = "";
+
+        if (aktuelleAnwesenheit.size > 1 && aktuelleAnwesenheit.has(driver.id)) {
+            const quoteSp = (driver.startpunkt === 1) ? quotesSp.get(driver.id) | 0 : '-';
+            res += String(quoteSp).padStart(4, ' ');
+            res += ' x';
+        }
+
+        return res;
+    }
+
+    function getDriverQuoteZw(driver: Driver) {
+        let res = "";
+
+        if (aktuelleAnwesenheit.size > 1 && aktuelleAnwesenheit.has(driver.id)) {
+            const quoteZw = (driver.startpunkt === 2 || driver.id === aktuellerVorschlag.fahrerA_id) ? quotesZw.get(driver.id) | 0 : '-';
+            res += String(quoteZw).padStart(4, ' ');
+            res += ' x';
+        }
+
+        return res;
+    }
+
+    function istDranSp(mitglied: Driver) {
+        return aktuellerVorschlag.fahrerA_id === mitglied.id;
+    }
+
+    function istDranZw(mitglied: Driver) {
+        const nurZw = new Set(zwischenstopp).difference(new Set(startpunkt1));
+
+        return (!!aktuelleAnwesenheit.intersection(nurZw).size) && aktuellerVorschlag.fahrerB_id === mitglied.id;
+    }
 
     return (
         <div className="card p-3 mb-3">
+            <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
+
             <div className="mb-3">
                 <label htmlFor="datum" className="form-label"><strong>Datum der Fahrt:</strong></label>
                 <input type="date" className="form-control" id="datum" value={datum.toISOString().split("T")[0]} onChange={e => setDatum(new Date(e.target.value || ''))}/>
             </div>
             <h5>Wer ist da?</h5>
             {mitglieder.map(mitglied => (
-                <div className="form-check" key={mitglied.id}>
-                    <input className="form-check-input" type="checkbox" id={mitglied.name} checked={aktuelleAnwesenheit.has(mitglied.name)} onChange={() => toggleAnwesenheit(mitglied.name)}/>
-                    <label className="form-check-label" htmlFor={mitglied.name}>{mitglied.name}</label>
+                <div className={
+                    "list-group-item d-flex justify-content-between align-items-center"} key={mitglied.id}>
+                    <div className="d-flex align-items-center">
+                        <input className="form-check-input me-2" type="checkbox" id={mitglied.name} checked={aktuelleAnwesenheit.has(mitglied.id)} onChange={() => toggleAnwesenheit(mitglied.id)}/>
+                    </div>
+                    <div className="d-flex align-items-center justify-content-between w-100">
+                        <span>{mitglied.label}</span>
+                        <span style={{width: "6rem", textAlign: "right"}}>
+                         <span style={{minWidth: "5rem"}} className="d-flex justify-content-end gap-1">
+                            {istDranSp(mitglied) && <span className="badge bg-warning text-dark">🚗</span>}
+                             {istDranZw(mitglied) && <span className="badge bg-primary">🚗</span>}
+                        </span>
+                        </span>
+                    </div>
+                    <div className="d-flex gap-2" style={{minWidth: "5rem", justifyContent: "flex-end"}}>
+                        <span className="text-end text-muted" style={{width: "3rem"}}>
+                          {getDriverQuoteSp(mitglied)}
+                        </span>
+                        <span className="text-end text-muted" style={{width: "3rem"}}>
+                          {getDriverQuoteZw(mitglied)}
+                        </span>
+                    </div>
                 </div>
             ))}
             <div className="mt-3">
                 <div className="mb-2">
                     <label htmlFor="fahrerA" className="form-label"><strong>Fahrer ab Startpunkt 1:</strong></label>
-                    <select className="form-select" id="fahrerA" value={aktuellerVorschlag.fahrerA} onChange={e => setAktuellerVorschlag({...aktuellerVorschlag, fahrerA: e.target.value})}>
+                    <select className="form-select" id="fahrerA" value={aktuellerVorschlag.fahrerA_id}
+                            onChange={e => {
+                                const fahrerA_id = parseInt(e.target.value) | 0;
+                                let fahrerB_id = aktuellerVorschlag.fahrerB_id;
+
+                                if (startpunkt1.includes(fahrerB_id) && aktuellerVorschlag.fahrerB_id === fahrerB_id) {
+                                    fahrerB_id = fahrerA_id;
+                                }
+                                setAktuellerVorschlag({...aktuellerVorschlag, fahrerA_id, fahrerB_id});
+                            }}>
                         <option value="">Wählen...</option>
-                        {Array.from(aktuelleAnwesenheit).filter(name => startpunkt1.includes(name)).map(name => <option key={name} value={name}>{name}</option>)}
+                        {
+                            Array.from(aktuelleAnwesenheit)
+                                .filter(id => startpunkt1.includes(id))
+                                .map(id => <option key={id} value={id}>{getDriverLabel(id)}</option>)
+                        }
                     </select>
                 </div>
                 <div className="mb-2">
                     <label htmlFor="fahrerB" className="form-label"><strong>Fahrer ab Zwischenstopp:</strong></label>
-                    <select className="form-select" id="fahrerB" value={aktuellerVorschlag.fahrerB} onChange={e => setAktuellerVorschlag({...aktuellerVorschlag, fahrerB: e.target.value})}>
+                    <select className="form-select" id="fahrerB" value={aktuellerVorschlag.fahrerB_id}
+                            onChange={e => setAktuellerVorschlag({...aktuellerVorschlag, fahrerB_id: parseInt(e.target.value) | 0})}>
                         <option value="">Wählen...</option>
-                        {Array.from(aktuelleAnwesenheit).filter(name => zwischenstopp.includes(name)).map(name => <option key={name} value={name}>{name}</option>)}
+                        {Array.from(aktuelleAnwesenheit)
+                            .filter(id => zwischenstopp.includes(id) &&
+                                (!startpunkt1.includes(id) || aktuellerVorschlag.fahrerA_id === id)
+                            )
+                            .map(id => <option key={id} value={id}>{getDriverLabel(id)}</option>)}
                     </select>
                 </div>
             </div>
-            <button className="btn btn-success mt-2" onClick={() => fahrtSpeichern(datum, aktuelleAnwesenheit, aktuellerVorschlag)}>Speichern</button>
+            <button className="btn btn-success mt-2" disabled={aktuelleAnwesenheit.size <= 1} onClick={() => fahrtSpeichern(datum, aktuelleAnwesenheit, aktuellerVorschlag)}>Speichern</button>
         </div>
     );
 }
