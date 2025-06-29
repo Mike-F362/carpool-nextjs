@@ -1,4 +1,4 @@
-import { createRouteHandlerSupabaseClient } from '@supabase/auth-helpers-nextjs';
+import { createPagesServerClient as createRouteHandlerSupabaseClient} from '@supabase/auth-helpers-nextjs';
 import { NextApiRequest, NextApiResponse } from 'next';
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
