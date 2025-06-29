@@ -4,11 +4,12 @@ import React from "react";
 
 import Driver from "@/interfaces/driver";
 import styles from "./tour_table.module.css";
+import Tour from "@/interfaces/tour";
 
 type Props = {
-    daten: any[],
+    daten: Tour[],
     fahrerListe: Driver[],
-    anwesenheiten: Set<string>[],
+    anwesenheiten: Set<number>[],
     pageSize: number,
     entferneFahrt: (id: number) => void,
     tableContainerRef: React.RefObject<HTMLDivElement>,
@@ -30,10 +31,29 @@ export default function Fahrtentabelle({
                                            zeileUmschalten,
                                            visibleRows
                                        }: Props) {
+    function getDriverA(f: Tour) {
+        return fahrerListe.find(item => item.id === f.fahrerA_id);
+    }
+
+    function getDriverB(f: Tour) {
+        return fahrerListe.find(item => item.id === f.fahrerB_id);
+    }
+
+    // const rowHeight = 36;
+    // const maxHeight = (rowHeight * pageSize) + 60;
+    //  <div
+    //     ref={tableContainerRef}
+    //     onScroll={handleScroll}
+    //     style={{
+    //       overflowY: "auto",
+    //       maxHeight: `${maxHeight}px`,
+    //       border: "1px solid #ddd",
+    //     }}
+    //   >
+
     return (
         <div
-            className="table-responsive mb-3"
-            style={{maxHeight: "100%", height: "100%", overflowY: "auto"}}
+            className={`${styles.tableWrapper} ${styles.scrollContainer}`}
             ref={tableContainerRef}
             onScroll={handleScroll}
         >
@@ -55,22 +75,24 @@ export default function Fahrtentabelle({
                         </button>
                     </th>
                     {fahrerListe.map(fahrer => (
-                        <th key={fahrer.name} className="d-sm-table-cell">{fahrer.name}</th>
+                        <th title={fahrer.label} key={fahrer.name} className="d-sm-table-cell">{fahrer.name}</th>
                     ))}
+                    <th className={styles.hideOnMobile}>Fahrer</th>
                     <th className={styles.deleteButton}></th>
                 </tr>
                 </thead>
 
-                <tbody>
+                <tbody
+                    onScroll={handleScroll}
+                >
                 {
-                    [...daten].slice(-pageSize).map((f, i) => {
-                        // [...daten].map((f, i) => {
-                    const zeileIstOffen = geöffneteZeilen.includes(i);
-                    const anwesenheitszellen = fahrerListe.map(m => (
-                        <td key={m.name} className={f.fahrerA === m.name ? "table-warning" : f.fahrerB === m.name ? "table-primary" : ""}>
-                            {anwesenheiten[daten.indexOf(f)]?.has(m.name) ? "✓" : ""}
-                        </td>
-                    ));
+                    [...daten].slice(-visibleRows).reverse().map((tour, i) => {
+                        const zeileIstOffen = geöffneteZeilen.includes(i);
+                        const anwesenheitszellen = fahrerListe.map(driver => (
+                            <td key={driver.id} className={tour.fahrerA_id === driver.id ? "table-warning" : tour.fahrerB_id === driver.id ? "table-primary" : ""}>
+                                {anwesenheiten[daten.indexOf(tour)]?.has(driver.id) ? "✓" : ""}
+                            </td>
+                        ));
 
                         return (
                             <React.Fragment key={i}>
@@ -80,27 +102,29 @@ export default function Fahrtentabelle({
                                     style={{cursor: "pointer"}}
                                 >
                                     <td>
-                                        {new Date(f.datum || "").toLocaleDateString("de-DE", {
+                                        {new Date(tour.datum || "").toLocaleDateString("de-DE", {
                                             weekday: "short", day: "2-digit", month: "2-digit", year: "2-digit"
                                         })}
                                     </td>
                                     {anwesenheitszellen}
+                                    <td className={styles.hideOnMobile}>{getDriverA(tour)?.label} → {getDriverB(tour)?.label}</td>
                                     <td className="text-end">
                                         <button
                                             className="btn btn-sm  btn-outline-danger"
                                             onClick={(e) => {
                                                 e.stopPropagation();
-                                                entferneFahrt(f.id);
+                                                entferneFahrt(tour.id);
                                             }}
                                         >
                                             ✕
                                         </button>
                                     </td>
                                 </tr>
+
                                 {zeileIstOffen && (
                                     <tr className={styles.fahrerInfoMobile}>
                                         <td colSpan={fahrerListe.length + 1} className="bg-light small">
-                                            <strong>Fahrer:</strong> {f.fahrerA} → {f.fahrerB}
+                                            <strong>Fahrer:</strong> {getDriverA(tour)?.label} → {getDriverB(tour)?.label}
                                         </td>
                                     </tr>
                                 )}

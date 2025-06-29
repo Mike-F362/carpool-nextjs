@@ -68,7 +68,7 @@ export default function Home() {
 
 
     async function ladeFahrten() {
-        const {data} = await supabase.from("fahrten").select("*").order("datum", {ascending: false});
+        const {data} = await supabase.from("fahrten").select("*").order("datum", {ascending: true});
         if (data) {
             setDaten(data.map(d => ({
                 id: d.id,

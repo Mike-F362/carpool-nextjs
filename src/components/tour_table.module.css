@@ -41,3 +41,11 @@
         background-color: #fff;
     }
 }
+
+/* CSS-Modul oder global */
+.scrollContainer {
+    overflow-y: auto;
+    /*max-height: 40rem;*/
+    max-height: calc(36px * 20 + 60px); /* 20 Zeilen + Header */
+    /*border: "1px solid #ccc";*/
+}
