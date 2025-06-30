@@ -213,9 +213,9 @@ export default function Home() {
 
     const neuerTagStarten = () => {
         const heute = new Date();
-        const lastDate = daten.at(0)?.datum;
+        const lastDate = maxDate;
 
-        let tag = lastDate > heute ? new Date(lastDate) : new Date(heute);
+        let tag = lastDate && lastDate > heute ? new Date(lastDate) : new Date(heute);
 
         do {
             tag.setDate(tag.getDate() + 1);
