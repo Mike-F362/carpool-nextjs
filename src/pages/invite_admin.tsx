@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/layout";
+import InviteLink from "@/components/invite_link";
 
 export default function InviteAdminPage() {
     const [email, setEmail] = useState("");
@@ -79,7 +80,7 @@ export default function InviteAdminPage() {
                     <tr key={i.code}>
                         <td>{i.email}</td>
                         <td>{i.role}</td>
-                        <td><code>{i.code}</code></td>
+                        <InviteLink key={i.code} token={i.code} email={i.email} />
                         <td>
                             <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(i.code)}>
                                 Löschen
