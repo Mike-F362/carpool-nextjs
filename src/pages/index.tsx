@@ -259,11 +259,12 @@ export default function Home() {
     const reset = async () => {
         if (!confirm("Wirklich ALLE Touren löschen?")) return;
 
-        setDaten([]);
-        setAnwesenheiten([]);
-        setLog([]);
         localStorage.removeItem("fahrtverteilung");
+
         await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
+
+        ladeFahrten();
+        initFahrerQuotes();
     };
 
     const entferneFahrt = async (id: number) => {
