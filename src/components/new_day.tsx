@@ -52,6 +52,24 @@ export default function NeuerTag({
     const [quotesZw, setQuotesZw] = useState(new Map<number, number>);
     const [quotesSp, setQuotesSp] = useState(new Map<number, number>);
 
+    useEffect(() => {
+        const init = async () => {
+            if (daten && daten.length) {
+                const letzteAnwesenheit = anwesenheiten[daten.length-1];
+
+                setAktuelleAnwesenheit(new Set(letzteAnwesenheit));
+
+                if (letzteAnwesenheit.size > 1) {
+                    setAktuellerVorschlag(await berechneFahrerVorschlag(letzteAnwesenheit));
+                } else {
+                    setAktuellerVorschlag({fahrerA_id: 0, fahrerB_id: 0});
+                }
+            }
+        };
+
+        init();
+    }, []);
+
     const simulate = async () => {
         const aktuelleAnwesenheit = new Set<number>(mitglieder.map(m => m.id));
         const aktuellerVorschlag = await berechneFahrerVorschlag(aktuelleAnwesenheit);
@@ -254,9 +272,31 @@ export default function NeuerTag({
         return (!!aktuelleAnwesenheit.intersection(nurZw).size) && aktuellerVorschlag.fahrerB_id === mitglied.id;
     }
 
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center p-4">
+                <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Lädt...</span>
+                </div>
+                <div className="text-center p-4">🔄 Lädt Neue Tour...</div>
+            </div>
+        );
+    }
+
+    async function resetForm() {
+        const vorschlag = await berechneFahrerVorschlag(aktuelleAnwesenheit);
+        setAktuellerVorschlag(vorschlag);
+    }
+
     return (
         <div className="card p-3 mb-3">
-            <button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>
+            <div className="d-flex justify-content-between align-items-center mb-3">
+                {isAdmin && (<button className="btn btn-info mb-3" onClick={simulate}>Simulation</button>)
+                }
+                <button className="btn btn-outline-secondary btn-sm" onClick={resetForm}>
+                    ♻️ Zurücksetzen
+                </button>
+            </div>
 
             <div className="mb-3">
                 <label htmlFor="datum" className="form-label"><strong>Datum der Fahrt:</strong></label>
