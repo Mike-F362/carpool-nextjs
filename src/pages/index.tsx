@@ -104,30 +104,84 @@ export default function Home() {
         }
     }
 
-    useEffect(() => {
-        ladeFahrten();
-    }, []);
+    async function ladeFahrerQuotesSp(): Promise<Map<number, number>[]> {
+        try {
+            const res = await fetch("/api/fahrer/quotes_sp", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+            });
 
-    useEffect(() => {
-        const ladeFahrer = async () => {
-            const {data} = await supabase.from("fahrer").select("*");
-            if (data) {
-                const fahrer: Driver[] = data.map(e => ({
-                    id: e.id,
-                    name: e.name,
-                    label: e.label,
-                    startpunkt: e.startpunkt
-                }));
-                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
-                setStartpunkt1(sp1)
-                const zw = fahrer.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
-                setZwischenstopp(sp1.concat(zw));
-                setFahrerListe(fahrer);
-                setMitglieder(fahrer);
+            if (!res.ok) {
+                console.error("Fehler beim Abrufen der Fahrerquote");
+                return;
             }
-        };
-        ladeFahrer();
-    }, []);
+
+            const quotes: Object = await res.json();
+            const allQuotes = Object.keys(quotes).reduce((obj, item) => {
+                const quoteMap: Map<number, number> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
+                    return [parseInt(key), value as number];
+                }));
+
+                obj.set(item, quoteMap);
+
+                return obj
+            }, new Map<string, Map<number, number>>());
+
+            console.log("QuoteSp:", allQuotes);
+
+            setAllQuotesSp(allQuotes);
+        } catch (error) {
+            console.error("Netzwerkfehler:", error);
+        }
+    }
+
+    async function ladeFahrerQuotesZw(): Promise<Map<number, number>[]> {
+        try {
+            const res = await fetch("/api/fahrer/quotes_zw", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+            });
+
+            if (!res.ok) {
+                console.error("Fehler beim Abrufen der Fahrerquote");
+                return;
+            }
+
+            const quotes: Object = await res.json();
+            const allQuotes = Object.keys(quotes).reduce((obj, item) => {
+                const quoteMap: Map<string, Map<number, number>> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
+                    const innerQuoteMap: Map<number, number> = new Map(Object.entries(value).map(([key, value]) => {
+                        return [parseInt(key), value as number];
+                    }));
+
+                    return [key, innerQuoteMap];
+                }));
+
+                obj.set(parseInt(item), quoteMap);
+
+                return obj
+            }, new Map<number, Map<string, Map<number, number>>>());
+
+            console.log("QuoteSp:", allQuotes);
+
+            setAllQuotesZw(allQuotes);
+        } catch (error) {
+            console.error("Netzwerkfehler:", error);
+        }
+    }
+
+    const initFahrerQuotes = async () => {
+        console.log("Initializing fahrer quotes...");
+
+        setLoading(true);
+
+        // Beispiel: Daten laden, Vorschlag berechnen, etc.
+        await Promise.all([ladeFahrerQuotesSp(), ladeFahrerQuotesZw()]);
+
+        setLoading(false);
+
+        console.log("Initialized  fahrer quotes.");
+    };
 
     const neuerTagStarten = () => {
         const heute = new Date();
@@ -157,6 +211,8 @@ export default function Home() {
         setNeuerTagAktiv(false);
 
         ladeFahrten();
+
+        initFahrerQuotes();
 
         setTimeout(() => {
             tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});

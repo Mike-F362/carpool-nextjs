@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 import Tour from "@/interfaces/tour";
 import Driver from "@/interfaces/driver";
 import FahrerVorschlag from "@/interfaces/driver_suggestion";
@@ -20,7 +20,12 @@ type Props = {
     fahrtSpeichern: (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: FahrerVorschlag) => void,
     datum: Date,
     setDatum: (value: (((prevState: Date) => Date) | Date)) => void,
-    ladeFahrten: () => Promise<void>
+    ladeFahrten: () => Promise<void>,
+    allQuotesSp: Map<any, any>,
+    allQuotesZw: Map<any, any>,
+    loading: boolean,
+    initFahrerQuotes?: () => Promise<void>,
+    isAdmin: boolean
 };
 
 export default function NeuerTag({
@@ -28,7 +33,6 @@ export default function NeuerTag({
                                      daten,
                                      fahrerListe,
                                      setDaten,
-                                     setNeuerTagAktiv,
                                      mitglieder,
                                      startpunkt1,
                                      tableContainerRef,
@@ -36,7 +40,12 @@ export default function NeuerTag({
                                      zwischenstopp,
                                      datum,
                                      setDatum,
-                                     ladeFahrten
+                                     ladeFahrten,
+                                     allQuotesSp,
+                                     allQuotesZw,
+                                     loading,
+                                     initFahrerQuotes,
+                                     isAdmin
                                  }: Props) {
     const [aktuellerVorschlag, setAktuellerVorschlag] = useState<FahrerVorschlag>({fahrerA_id: 0, fahrerB_id: 0});
     const [aktuelleAnwesenheit, setAktuelleAnwesenheit] = useState(new Set<number>());
@@ -45,7 +54,7 @@ export default function NeuerTag({
 
     const simulate = async () => {
         const aktuelleAnwesenheit = new Set<number>(mitglieder.map(m => m.id));
-        const aktuellerVorschlag = await berechneFahrerVorschlag(aktuelleAnwesenheit, daten, anwesenheiten);
+        const aktuellerVorschlag = await berechneFahrerVorschlag(aktuelleAnwesenheit);
 
         let datum = daten.map(d => d.datum).reduce((prev, curr, index, arr) => {
             return prev > curr ? prev : curr
@@ -74,6 +83,7 @@ export default function NeuerTag({
         setAktuelleAnwesenheit(aktuelleAnwesenheit);
 
         ladeFahrten();
+        initFahrerQuotes();
 
         setTimeout(() => {
             tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
@@ -143,34 +153,54 @@ export default function NeuerTag({
 
         const fahrerB_id = anwesend2[0];
         const fahrerB = fahrerListe.find(fahrer => fahrer.id == fahrerB_id)
-        const fahrerB_text = fahrerB || "?";
+        const fahrerB_text = fahrerB?.label || "?";
         return {fahrer_id: fahrerB_id, fahrer_text: fahrerB_text};
     }
 
-    async function berechneFahrerVorschlag(anwesend: Set<number>, daten, anwesenheiten): Promise<FahrerVorschlag> {
-        const anwesend1 = Array.from(anwesend)
-            .filter(n => startpunkt1.includes(n));
-
-        const quoteSp = await ladeFahrerQuoteSp(anwesend1);
-
-        const {fahrer_id: fahrerA_id, fahrer_text: fahrerA_text} = nextDriver(anwesend1, quoteSp);
-
-        console.log(`Fahrer A ${fahrerA_text} quote`, quoteSp);
-
-        const anwesend2 = Array.from(anwesend)
-            .filter(n => zwischenstopp.includes(n) && !startpunkt1.includes(n));
-
-        const quoteZw = await ladeFahrerQuoteZw(fahrerA_id, anwesend2);
-
-        anwesend2.push(fahrerA_id);
-        const {fahrer_id: fahrerB_id, fahrer_text: fahrerB_text} = nextDriver(anwesend2, quoteZw);
-
-        console.log(`Fahrer B ${fahrerB_text} quote`, quoteSp);
+    async function berechneFahrerVorschlag(anwesend: Set<number>): Promise<FahrerVorschlag> {
+        const fahrerA_id = await berechneFahrerVorschlagSp(anwesend);
+        const fahrerB_id = await berechneFahrerVorschlagZw(fahrerA_id, anwesend);
 
         return {
             fahrerA_id,
             fahrerB_id
         };
+
+    }
+
+    async function berechneFahrerVorschlagSp(anwesend: Set<number>): Promise<number> {
+        const anwesend1 = Array.from(anwesend)
+            .filter(n => startpunkt1.includes(n));
+
+        const anwesendSp = Array.from(anwesend).filter(n => startpunkt1.includes(n));
+
+        // const quoteSp = await ladeFahrerQuoteSp(anwesend1);
+        const quotesSpKey = Array.from(anwesendSp).join('-');
+        const quoteSp = allQuotesSp.get(quotesSpKey) || new Map();
+        setQuotesSp(quoteSp);
+
+        const {fahrer_id: fahrerA_id, fahrer_text: fahrerA_text} = nextDriver(anwesend1, quoteSp);
+
+        console.log(`Fahrer A ${fahrerA_text} quote`, quoteSp);
+
+        return fahrerA_id;
+    }
+
+    async function berechneFahrerVorschlagZw(fahrerA_id: number, anwesend: Set<number>): Promise<number> {
+        const anwesendZw = Array.from(anwesend).filter(n => zwischenstopp.includes(n) && !startpunkt1.includes(n));
+
+        // const quoteZw = await ladeFahrerQuoteZw(fahrerA_id, anwesendZw);
+        const driverQuotesZw = allQuotesZw.get(fahrerA_id) || new Map();
+        const quotesZwKey = Array.from(anwesendZw).join('-');
+        const quoteZw = driverQuotesZw.get(quotesZwKey) || new Map();
+        setQuotesZw(quoteZw);
+
+        anwesendZw.push(fahrerA_id);
+        const {fahrer_id: fahrerB_id, fahrer_text: fahrerB_text} = nextDriver(anwesendZw, quoteZw);
+
+        console.log(`Fahrer B ${fahrerB_text} quote`, quoteZw);
+
+        return fahrerB_id
     }
 
     const toggleAnwesenheit = async (id: number) => {
@@ -180,7 +210,7 @@ export default function NeuerTag({
         setAktuelleAnwesenheit(kopie);
 
         if (kopie.size > 1) {
-            setAktuellerVorschlag(await berechneFahrerVorschlag(kopie, daten, anwesenheiten));
+            setAktuellerVorschlag(await berechneFahrerVorschlag(kopie));
         } else {
             setAktuellerVorschlag({fahrerA_id: 0, fahrerB_id: 0});
         }
@@ -193,7 +223,7 @@ export default function NeuerTag({
     function getDriverQuoteSp(driver: Driver) {
         let res = "";
 
-        if (aktuelleAnwesenheit.size > 1 && aktuelleAnwesenheit.has(driver.id)) {
+        if (quotesSp && aktuelleAnwesenheit.size > 1 && aktuelleAnwesenheit.has(driver.id)) {
             const quoteSp = (driver.startpunkt === 1) ? quotesSp.get(driver.id) | 0 : '-';
             res += String(quoteSp).padStart(4, ' ');
             res += ' x';
