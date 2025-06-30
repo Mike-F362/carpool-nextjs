@@ -320,7 +320,7 @@ export default function Home() {
             {zeigeModal && <AuthModal onClose={() => setZeigeModal(false)}/>}
 
             {session ? (
-                <main className="d-flex flex-column overflow-hidden ">
+                <main className="d-flex flex-column">
 
                     <div style={{height: '1rem'}}></div>
 
@@ -355,7 +355,7 @@ export default function Home() {
 
                     {/*<div style={{height: '1rem'}}></div>*/}
 
-                    <div className="flex-grow-1 overflow-auto">
+                    <div className="flex-grow-1">
                         {neuerTagAktiv && (
                             <NeuerTag
                                 datum={datum}

@@ -39,23 +39,19 @@ export default function Fahrtentabelle({
         return fahrerListe.find(item => item.id === f.fahrerB_id);
     }
 
-    // const rowHeight = 36;
-    // const maxHeight = (rowHeight * pageSize) + 60;
-    //  <div
-    //     ref={tableContainerRef}
-    //     onScroll={handleScroll}
-    //     style={{
-    //       overflowY: "auto",
-    //       maxHeight: `${maxHeight}px`,
-    //       border: "1px solid #ddd",
-    //     }}
-    //   >
+    const rowHeight = 36;
+    const maxHeight = (rowHeight * pageSize); // + 60;
 
     return (
+        // className={`${styles.tableWrapper} ${styles.scrollContainer}`}
         <div
-            className={`${styles.tableWrapper} ${styles.scrollContainer}`}
             ref={tableContainerRef}
             onScroll={handleScroll}
+            style={{
+              overflowY: "auto",
+              maxHeight: `${maxHeight}px`,
+              border: "1px solid #ddd",
+            }}
         >
             <table className={`table table-bordered table-sm able-hover ${styles.tableSticky}`}>
                 <thead className={styles.stickyMobile}>
@@ -82,9 +78,7 @@ export default function Fahrtentabelle({
                 </tr>
                 </thead>
 
-                <tbody
-                    onScroll={handleScroll}
-                >
+                <tbody>
                 {
                     [...daten].slice(-visibleRows).reverse().map((tour, i) => {
                         const zeileIstOffen = geöffneteZeilen.includes(i);
