@@ -372,6 +372,11 @@ export default function Home() {
                                 tableContainerRef={tableContainerRef}
                                 zwischenstopp={zwischenstopp}
                                 fahrtSpeichern={fahrtSpeichern}
+                                initFahrerQuotes={initFahrerQuotes}
+                                allQuotesSp={allQuotesSp}
+                                allQuotesZw={allQuotesZw}
+                                loading={loading}
+                                isAdmin={isAdmin}
                             />
                         )}
 
