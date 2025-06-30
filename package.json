@@ -12,6 +12,7 @@
     "bootstrap": "^5.3.7",
     "next": "latest",
     "react": "latest",
+    "react-bootstrap": "^2.10.10",
     "react-dom": "latest"
   },
   "devDependencies": {
