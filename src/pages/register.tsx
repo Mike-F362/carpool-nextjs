@@ -1,6 +1,4 @@
-// 📁 src/pages/register.tsx
-
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { useRouter } from "next/router";
 
 export default function RegisterPage() {
@@ -11,6 +9,14 @@ export default function RegisterPage() {
     const [err, setErr] = useState("");
     const [loading, setLoading] = useState(false);
     const router = useRouter();
+
+    useEffect(() => {
+        if (router.isReady) {
+            const { token, email } = router.query;
+            if (typeof token === "string") setCode(token);
+            if (typeof email === "string") setEmail(email);
+        }
+    }, [router.isReady, router.query.token]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
