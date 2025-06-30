@@ -44,8 +44,9 @@ export default function Header({
                 </div>
 
                 <div className="d-flex align-items-center ms-auto">
-                    {user?.email && <span className="me-2 small">{user.email}</span>}
+                    {user?.email && <span className="me-2 text-black opacity-75 small">{user.email}</span>}
                     <button
+                        title="Logout"
                         className="btn btn-sm btn-outline-secondary"
                         onClick={() => supabase.auth.signOut()}
                     >
