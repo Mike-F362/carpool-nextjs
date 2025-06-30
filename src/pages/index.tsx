@@ -70,6 +70,34 @@ export default function Home() {
         });
     }, []);
 
+    useEffect(() => {
+        initFahrerQuotes();
+    }, []);
+
+    useEffect(() => {
+        ladeFahrten();
+    }, []);
+
+    useEffect(() => {
+        const ladeFahrer = async () => {
+            const {data} = await supabase.from("fahrer").select("*");
+            if (data) {
+                const fahrer: Driver[] = data.map(e => ({
+                    id: e.id,
+                    name: e.name,
+                    label: e.label,
+                    startpunkt: e.startpunkt
+                }));
+                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
+                setStartpunkt1(sp1)
+                const zw = fahrer.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
+                setZwischenstopp(sp1.concat(zw));
+                setFahrerListe(fahrer);
+                setMitglieder(fahrer);
+            }
+        };
+        ladeFahrer();
+    }, []);
 
     async function ladeFahrten() {
         try {
