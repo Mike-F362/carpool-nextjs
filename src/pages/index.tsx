@@ -25,6 +25,7 @@ export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<number>>>([]);
     const [daten, setDaten] = useState<Array<Tour>>([]);
     const [datum, setDatum] = useState<Date>();
+    const [maxDate, setMaxDate] = useState<Date>();
 
     const [log, setLog] = useState([]);
     const [fahrerVerwaltungAktiv, setFahrerVerwaltungAktiv] = useState(false);
@@ -71,18 +72,35 @@ export default function Home() {
 
 
     async function ladeFahrten() {
-        const {data} = await supabase.from("fahrten").select("*").order("datum", {ascending: true});
-        if (data) {
-            const tours = data.map(d => ({
-                id: d.id,
-                datum: new Date(d.datum),
-                anwesend_ids: d.anwesend_ids,
-                fahrerA_id: d.fahrerA_id,
-                fahrerB_id: d.fahrerB_id
+        try {
+            const res = await fetch("/api/tours/list", {
+                method: "GET",
+                headers: {"Content-Type": "application/json"},
+            });
+
+            if (!res.ok) {
+                console.error("Fehler beim Abrufen der Fahrten");
+                return;
+            }
+
+            const data = await res.json();
+
+            const tours = data.tours.map(row => ({
+                id: row.id,
+                datum: row.datum,
+                fahrerA_id: row.fahrerA_id,
+                fahrerB_id: row.fahrerB_id,
+                anwesend_ids: row.anwesend_ids,
             }));
+
+            const currentMaxDate = data.maxDate ? new Date(data.maxDate) : null;
+
+            setMaxDate(currentMaxDate);
             setDaten(tours);
-            console.log(tours);
             setAnwesenheiten(tours.map(d => new Set(d.anwesend_ids)));
+
+        } catch (error) {
+            console.error("Netzwerkfehler:", error);
         }
     }
 
