@@ -332,9 +332,10 @@ export default function NeuerTag({
                 <div className="mb-2">
                     <label htmlFor="fahrerA" className="form-label"><strong>Fahrer ab Startpunkt 1:</strong></label>
                     <select className="form-select" id="fahrerA" value={aktuellerVorschlag.fahrerA_id}
-                            onChange={e => {
+                            onChange={async e => {
                                 const fahrerA_id = parseInt(e.target.value) | 0;
-                                let fahrerB_id = aktuellerVorschlag.fahrerB_id;
+
+                                let fahrerB_id = await berechneFahrerVorschlagZw(fahrerA_id, aktuelleAnwesenheit);
 
                                 if (startpunkt1.includes(fahrerB_id) && aktuellerVorschlag.fahrerB_id === fahrerB_id) {
                                     fahrerB_id = fahrerA_id;
