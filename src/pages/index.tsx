@@ -27,8 +27,6 @@ export default function Home() {
     const [datum, setDatum] = useState<Date>();
     const [maxDate, setMaxDate] = useState<Date>();
 
-    const [log, setLog] = useState([]);
-    const [fahrerVerwaltungAktiv, setFahrerVerwaltungAktiv] = useState(false);
     const [neuerTagAktiv, setNeuerTagAktiv] = useState(false);
 
     const [pageSize, setPageSize] = useState(20);
@@ -48,8 +46,10 @@ export default function Home() {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [zeigeModal, setZeigeModal] = useState(false);
 
-    const [showCreateModal, setShowCreateModal] = useState(false);
-    const [showInviteAdmin, setShowInviteAdmin] = useState(false);
+    const [allQuotesSp, setAllQuotesSp] = useState(new Map<string, Map<number, number>>);
+    const [allQuotesZw, setAllQuotesZw] = useState(new Map<number, Map<string, Map<number, number>>>);
+
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         supabase.auth.getSession().then(async ({data}) => {
