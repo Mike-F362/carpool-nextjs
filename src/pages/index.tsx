@@ -333,7 +333,7 @@ export default function Home() {
                             {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
                         </button>
                         {
-                            <div className="input-group mb-3" style={{width: '200px'}}>
+                            <div className="input-group mb-3" style={{width: '200px'}} hidden={!isAdmin}>
                                 <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
                                 <select
                                     id="pageSize"
