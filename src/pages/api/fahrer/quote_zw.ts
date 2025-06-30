@@ -7,7 +7,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const anwesend = req.body.anwesend as string[] || [];
     const fahrerA_id = req.body.fahrerA_id as number || 0;
 
-    // Zwischenfahrer mit startpunkt = 2
+    // Startpunktfahrer mit startpunkt = 1
     const {data: startPunktfahrer, error: err1} = await supabase
         .from("fahrer")
         .select("id")
