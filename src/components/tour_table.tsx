@@ -13,8 +13,6 @@ type Props = {
     pageSize: number,
     entferneFahrt: (id: number) => void,
     tableContainerRef: React.RefObject<HTMLDivElement>,
-    handleScroll?: () => void,
-    visibleRows?: number
 };
 
 export default function Fahrtentabelle({
@@ -24,10 +22,9 @@ export default function Fahrtentabelle({
                                            pageSize,
                                            entferneFahrt,
                                            tableContainerRef,
-                                           handleScroll,
-                                           visibleRows
                                        }: Props) {
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
+    const [visibleRows, setVisibleRows] = useState(pageSize);
 
     const zeileUmschalten = (index: number) => {
         setGeöffneteZeilen(prev =>
@@ -36,6 +33,14 @@ export default function Fahrtentabelle({
                 : [...prev, index]
         );
     };
+
+    const handleScroll = () => {
+        if (!tableContainerRef.current) return;
+        const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;
+        if (scrollTop + clientHeight >= scrollHeight - 10) {
+            setVisibleRows((prev) => Math.min(prev + 20, daten.length));
+        }
+    }
 
     function getDriverA(f: Tour) {
         return fahrerListe.find(item => item.id === f.fahrerA_id);
