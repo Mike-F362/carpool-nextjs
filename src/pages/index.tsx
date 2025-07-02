@@ -39,8 +39,6 @@ export default function Home() {
     const [startpunkt1, setStartpunkt1] = useState<number[]>([]);
     const [zwischenstopp, setZwischenstopp] = useState<number[]>([]);
 
-    const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
-
     const [session, setSession] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
@@ -273,14 +271,6 @@ export default function Home() {
         ladeFahrten();
     };
 
-    const zeileUmschalten = (index: number) => {
-        setGeöffneteZeilen(prev =>
-            prev.includes(index)
-                ? prev.filter(i => i !== index)
-                : [...prev, index]
-        );
-    };
-
     function isSameAnwesenheit(
         fahrtAnwesend: string[],
         selectedAnwesend: string[],
@@ -389,8 +379,6 @@ export default function Home() {
                             entferneFahrt={entferneFahrt}
                             tableContainerRef={tableContainerRef}
                             handleScroll={handleScroll}
-                            geöffneteZeilen={geöffneteZeilen}
-                            zeileUmschalten={zeileUmschalten}
                         />
 
                     </div>

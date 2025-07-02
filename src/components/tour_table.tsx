@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react";
+import React, {useState} from "react";
 
 import Driver from "@/interfaces/driver";
 import styles from "./tour_table.module.css";
@@ -14,8 +14,6 @@ type Props = {
     entferneFahrt: (id: number) => void,
     tableContainerRef: React.RefObject<HTMLDivElement>,
     handleScroll?: () => void,
-    geöffneteZeilen?: number[],
-    zeileUmschalten?: (index: number) => void,
     visibleRows?: number
 };
 
@@ -27,10 +25,18 @@ export default function Fahrtentabelle({
                                            entferneFahrt,
                                            tableContainerRef,
                                            handleScroll,
-                                           geöffneteZeilen,
-                                           zeileUmschalten,
                                            visibleRows
                                        }: Props) {
+    const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
+
+    const zeileUmschalten = (index: number) => {
+        setGeöffneteZeilen(prev =>
+            prev.includes(index)
+                ? prev.filter(i => i !== index)
+                : [...prev, index]
+        );
+    };
+
     function getDriverA(f: Tour) {
         return fahrerListe.find(item => item.id === f.fahrerA_id);
     }
