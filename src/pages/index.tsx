@@ -246,13 +246,11 @@ export default function Home() {
 
     };
 
-    const handleScroll = () => {
-        if (!tableContainerRef.current) return;
-        const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;
-        if (scrollTop + clientHeight >= scrollHeight - 10) {
-            setVisibleRows((prev) => Math.min(prev + 20, daten.length));
-        }
-    }
+    const entferneFahrt = async (id: number) => {
+        if (!confirm("Diese Tour wirklich löschen?")) return;
+        await supabase.from("fahrten").delete().eq("id", id);
+        ladeFahrten();
+    };
 
     const reset = async () => {
         if (!confirm("Wirklich ALLE Touren löschen?")) return;
@@ -265,23 +263,13 @@ export default function Home() {
         initFahrerQuotes();
     };
 
-    const entferneFahrt = async (id: number) => {
-        if (!confirm("Diese Tour wirklich löschen?")) return;
-        await supabase.from("fahrten").delete().eq("id", id);
-        ladeFahrten();
-    };
-
-    function isSameAnwesenheit(
-        fahrtAnwesend: string[],
-        selectedAnwesend: string[],
-        zwischenIds: Set<string>
-    ): boolean {
-        const filter = (arr: string[]) => arr.filter(id => !zwischenIds.has(id)).sort();
-        const a = filter(fahrtAnwesend);
-        const b = filter(selectedAnwesend);
-        return JSON.stringify(a) === JSON.stringify(b);
+    const handleScroll = () => {
+        if (!tableContainerRef.current) return;
+        const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;
+        if (scrollTop + clientHeight >= scrollHeight - 10) {
+            setVisibleRows((prev) => Math.min(prev + 20, daten.length));
+        }
     }
-
     return (
         <div className="d-flex flex-column vh-100">
             <Head>

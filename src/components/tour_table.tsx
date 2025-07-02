@@ -13,8 +13,8 @@ type Props = {
     pageSize: number,
     entferneFahrt: (id: number) => void,
     tableContainerRef: React.RefObject<HTMLDivElement>,
-    handleScroll?: () => void,
-    visibleRows?: number
+    handleScroll: () => void,
+    visibleRows
 };
 
 export default function Fahrtentabelle({
@@ -88,9 +88,9 @@ export default function Fahrtentabelle({
             ref={tableContainerRef}
             onScroll={handleScroll}
             style={{
-              overflowY: "auto",
-              maxHeight: `${maxHeight}px`,
-              border: "1px solid #ddd",
+                overflowY: "auto",
+                maxHeight: `${maxHeight}px`,
+                border: "1px solid #ddd",
             }}
         >
             <table className={`table table-bordered table-sm able-hover ${styles.tableSticky}`}>
@@ -131,10 +131,10 @@ export default function Fahrtentabelle({
                         return (
                             <React.Fragment key={i}>
                                 <tr
-                                    className={"clickable-row" + (matchingFahrten.has(tour.id) ? " table-active" : "")}
+                                    className={"clickable-row" + (eqArraySet(tour.anwesend_ids, selectedAnwesenheit) ? " table-active" : "")}
                                     onClick={() => {
                                         zeileUmschalten(i);
-                                        calcMatches(tour.anwesend_ids);
+                                        setSelectedAnwesenheit(tour.anwesend_ids);
                                     }}
                                     style={{cursor: "pointer"}}
                                 >
