@@ -30,6 +30,7 @@ export default function Home() {
     const [neuerTagAktiv, setNeuerTagAktiv] = useState(false);
 
     const [pageSize, setPageSize] = useState(20);
+    const [visibleRows, setVisibleRows] = useState(pageSize);
 
     const tableContainerRef = useRef(null);
 
@@ -245,6 +246,14 @@ export default function Home() {
 
     };
 
+    const handleScroll = () => {
+        if (!tableContainerRef.current) return;
+        const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;
+        if (scrollTop + clientHeight >= scrollHeight - 10) {
+            setVisibleRows((prev) => Math.min(prev + 20, daten.length));
+        }
+    }
+
     const reset = async () => {
         if (!confirm("Wirklich ALLE Touren löschen?")) return;
 
@@ -366,8 +375,10 @@ export default function Home() {
                             fahrerListe={fahrerListe}
                             anwesenheiten={anwesenheiten}
                             pageSize={pageSize}
+                            visibleRows={visibleRows}
                             entferneFahrt={entferneFahrt}
                             tableContainerRef={tableContainerRef}
+                            handleScroll={handleScroll}
                         />
 
                     </div>
