@@ -28,7 +28,7 @@ export default function Fahrtentabelle({
                                            visibleRows
                                        }: Props) {
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
-    const [matchingFahrten, setMatchingFahrten] = useState(new Set());
+    const [selectedAnwesenheit, setSelectedAnwesenheit] = useState<number[]>([]);
 
     const rowHeight = 36;
     const maxHeight = (rowHeight * pageSize); // + 60;
@@ -56,30 +56,14 @@ export default function Fahrtentabelle({
     // return JSON.stringify(a) === JSON.stringify(b);
     // }
 
-    function eqSet<T> (as: Set<T>, bs: Set<T>): boolean
-    {
-        if (as.size !== bs.size) {
-            return false;
-        }
-        for (const a of as) {
-            if (!bs.has(a)) {
-                return false;
-            }
+    function eqArraySet(a: number[], b: number[]): boolean {
+        if (a.length !== b.length) return false;
+        const setA = new Set(a);
+        const setB = new Set(b);
+        for (const val of setA) {
+            if (!setB.has(val)) return false;
         }
         return true;
-    }
-
-    function calcMatches(selectedAnwesend: number[]) {
-        const neueMatches = new Set();
-        const selectedAnwesendSet = new Set(selectedAnwesend);
-
-        anwesenheiten.forEach((anwesenheit, index) => {
-            if (eqSet(anwesenheit, selectedAnwesendSet)) {
-                neueMatches.add(daten[index].id);
-            }
-        });
-
-        setMatchingFahrten(neueMatches);
     }
 
     return (
