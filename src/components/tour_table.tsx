@@ -24,7 +24,10 @@ export default function Fahrtentabelle({
                                            tableContainerRef,
                                        }: Props) {
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
-    const [visibleRows, setVisibleRows] = useState(pageSize);
+    const [matchingFahrten, setMatchingFahrten] = useState(new Set());
+
+    const rowHeight = 36;
+    const maxHeight = (rowHeight * pageSize); // + 60;
 
     const zeileUmschalten = (index: number) => {
         setGeöffneteZeilen(prev =>
@@ -50,8 +53,38 @@ export default function Fahrtentabelle({
         return fahrerListe.find(item => item.id === f.fahrerB_id);
     }
 
-    const rowHeight = 36;
-    const maxHeight = (rowHeight * pageSize); // + 60;
+    // function isSameAnwesenheit(fahrtAnwesend, selectedAnwesend) {
+    // const filter = (arr) => arr.filter(id => !zwischenIds.has(id)).sort();
+    // const a = filter(fahrtAnwesend);
+    // const b = filter(selectedAnwesend);
+    // return JSON.stringify(a) === JSON.stringify(b);
+    // }
+
+    function eqSet<T> (as: Set<T>, bs: Set<T>): boolean
+    {
+        if (as.size !== bs.size) {
+            return false;
+        }
+        for (const a of as) {
+            if (!bs.has(a)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    function calcMatches(selectedAnwesend: number[]) {
+        const neueMatches = new Set();
+        const selectedAnwesendSet = new Set(selectedAnwesend);
+
+        anwesenheiten.forEach((anwesenheit, index) => {
+            if (eqSet(anwesenheit, selectedAnwesendSet)) {
+                neueMatches.add(daten[index].id);
+            }
+        });
+
+        setMatchingFahrten(neueMatches);
+    }
 
     return (
         // className={`${styles.tableWrapper} ${styles.scrollContainer}`}
@@ -102,8 +135,11 @@ export default function Fahrtentabelle({
                         return (
                             <React.Fragment key={i}>
                                 <tr
-                                    className="clickable-row"
-                                    onClick={() => zeileUmschalten(i)}
+                                    className={"clickable-row" + (matchingFahrten.has(tour.id) ? " table-active" : "")}
+                                    onClick={() => {
+                                        zeileUmschalten(i);
+                                        calcMatches(tour.anwesend_ids);
+                                    }}
                                     style={{cursor: "pointer"}}
                                 >
                                     <td>
