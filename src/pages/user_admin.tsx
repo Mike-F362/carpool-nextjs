@@ -21,7 +21,7 @@ export default function UserAdminPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id, role })
         });
-        fetchUsers();
+        await fetchUsers();
     };
 
     return (

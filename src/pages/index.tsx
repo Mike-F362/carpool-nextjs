@@ -239,7 +239,7 @@ export default function Home() {
     const entferneFahrt = async (id: number) => {
         if (!confirm("Diese Tour wirklich löschen?")) return;
         await supabase.from("fahrten").delete().eq("id", id);
-        ladeFahrten();
+        await ladeFahrten();
     };
 
     const reset = async () => {

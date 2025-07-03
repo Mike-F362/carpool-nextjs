@@ -33,7 +33,7 @@ export default function FahrerAdminPage() {
         });
         setName("");
         setLabel("");
-        fetchFahrer();
+        await fetchFahrer();
     };
 
     const handleDelete = async (id: string) => {
@@ -42,7 +42,7 @@ export default function FahrerAdminPage() {
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({id})
         });
-        fetchFahrer();
+        await fetchFahrer();
     };
 
     const handleUpdate = async (id: string, field: keyof Fahrer, value: string) => {
@@ -51,7 +51,7 @@ export default function FahrerAdminPage() {
             headers: {"Content-Type": "application/json"},
             body: JSON.stringify({id, [field]: value})
         });
-        fetchFahrer();
+        await fetchFahrer();
     };
 
     return (

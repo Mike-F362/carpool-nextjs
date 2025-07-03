@@ -39,13 +39,13 @@ export default function Fahrerverwaltung({
         if (!neuerName) return;
         await supabase.from("fahrer").insert({name: neuerName});
         setName("");
-        aktualisieren();
+        await aktualisieren();
     };
 
     const entfernen = async (fahrer: Driver) => {
         if (!confirm(`Fahrer #${fahrer.id} '${fahrer.name}' wirklich löschen?`)) return;
         await supabase.from("fahrer").delete().eq("id", fahrer.id);
-        aktualisieren();
+        await aktualisieren();
     };
 
     return (

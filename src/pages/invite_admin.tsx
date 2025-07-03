@@ -32,7 +32,7 @@ export default function InviteAdminPage() {
         } else {
             setMsg(`Einladung erstellt: ${data.code}`);
             setEmail("");
-            loadInvites();
+            await loadInvites();
         }
     };
 
@@ -42,7 +42,7 @@ export default function InviteAdminPage() {
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ code })
         });
-        loadInvites();
+        await loadInvites();
     };
 
     return (
