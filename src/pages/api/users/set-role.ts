@@ -1,8 +1,12 @@
-import { createPagesServerClient as createRouteHandlerSupabaseClient} from '@supabase/auth-helpers-nextjs';
 import { NextApiRequest, NextApiResponse } from 'next';
+import {createClient} from "@supabase/supabase-js";
+
+const supabase = createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
+);
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const supabase = createRouteHandlerSupabaseClient({ req, res });
   const { id, role } = req.body;
 
   const { error } = await supabase.auth.admin.updateUserById(id, {
