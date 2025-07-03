@@ -1,4 +1,3 @@
-// 📁 src/pages/user_admin.tsx
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
 
@@ -7,7 +6,7 @@ export default function UserAdminPage() {
 
     const fetchUsers = async () => {
         const res = await fetch("/api/users/list");
-        const data = await res.json();
+        const data = await res.json() || [];
         setUsers(data);
     };
 
