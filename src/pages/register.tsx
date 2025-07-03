@@ -36,7 +36,7 @@ export default function RegisterPage() {
             setErr(data.error || "Registrierung fehlgeschlagen");
         } else {
             setMsg("Registrierung erfolgreich! Du kannst dich jetzt anmelden.");
-            setTimeout(() => router.push("/login"), 2000);
+            setTimeout(() => router.push("/"), 2000);
         }
     };
 

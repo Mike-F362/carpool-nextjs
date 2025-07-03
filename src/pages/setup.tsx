@@ -17,7 +17,7 @@ export default function SetupPage() {
         fetch("/api/setup-admin/check")
             .then(res => res.json())
             .then(data => {
-                if (data.exists) router.push("/login");
+                if (data.exists) router.push("/");
                 else setReady(true);
             });
     }, [router]);
