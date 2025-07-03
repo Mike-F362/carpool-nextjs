@@ -68,7 +68,7 @@ export default function NeuerTag({
         };
 
         init();
-    }, []);
+    }, [loading]);
 
     const simulate = async () => {
         const aktuelleAnwesenheit = new Set<number>(mitglieder.map(m => m.id));
