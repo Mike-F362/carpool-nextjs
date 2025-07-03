@@ -1,6 +1,5 @@
 import type {NextApiRequest, NextApiResponse} from "next";
 import {createClient} from "@supabase/supabase-js";
-import {supabase} from "@/lib/supabaseClient";
 
 const supabaseAdmin = createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -13,8 +12,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const {email, password, code} = req.body;
     if (!email || !password || !code) return res.status(400).json({error: "Fehlende Felder"});
 
-    // 1. Invite-Code validieren
-    const {data: invite, error: inviteError} = await supabase
+    const {data: invite, error: inviteError} = await supabaseAdmin
         .from("invites")
         .select("*")
         .eq("code", code)
@@ -24,7 +22,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({error: "Ungültiger Einladungscode"});
     }
 
-    // 2. Benutzer erstellen
     const {error: createError} = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
@@ -36,8 +33,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(500).json({error: createError.message});
     }
 
-    // 3. Invite als verwendet markieren (optional)
-    await supabase.from("invites").update({used: true}).eq("code", code);
+    await supabaseAdmin.from("invites").update({used: true}).eq("code", code);
 
     return res.status(200).json({success: true});
 }
