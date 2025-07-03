@@ -274,10 +274,6 @@ export default function Home() {
         <div className="d-flex flex-column vh-100">
             <Head>
                 <title>Fahrgemeinschaftsplaner</title>
-                <link
-                    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-                    rel="stylesheet"
-                />
             </Head>
 
             <div className="p-2 border-bottom bg-light">
