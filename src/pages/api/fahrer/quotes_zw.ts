@@ -30,12 +30,11 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const quotes_values = await Promise.all(quotesPerSpDriver);
 
-    const arrayToObject = (array) =>
+    const arrayToObject = (array: object[]) =>
         array.reduce((obj, item) => {
             Object.entries(item).forEach(([key, value]) => {
                 let objValue = {};
-                // @ts-ignore
-                value.forEach((array_value) => {
+                value.forEach((array_value: { [s: string]: object; } ) => {
                     Object.entries(array_value).forEach(([key, value]) => {
                         objValue[key] = value;
                     });
