@@ -24,7 +24,7 @@ export default function InviteAdminPage() {
         const res = await fetch("/api/invite/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, role: "admin" })
+            body: JSON.stringify({ email, role: "user" })
         });
         const data = await res.json();
         if (!res.ok) {
