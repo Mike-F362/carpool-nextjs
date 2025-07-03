@@ -1,5 +1,3 @@
-// Erstellt den ersten Admin-User, nur wenn noch kein User existiert
-
 import type { NextApiRequest, NextApiResponse } from "next";
 import { createClient } from "@supabase/supabase-js";
 
@@ -15,7 +13,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const { email, password } = req.body;
 
-    // Gibt es bereits einen Benutzer?
     const { data: users, error: listError } = await supabase.auth.admin.listUsers({
         page: 1,
         perPage: 1
@@ -29,7 +26,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(403).json({ error: "Setup ist gesperrt: Benutzer existieren bereits." });
     }
 
-    // Neuen Admin anlegen
     const { error } = await supabase.auth.admin.createUser({
         email,
         password,

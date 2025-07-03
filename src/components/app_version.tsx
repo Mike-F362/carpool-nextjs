@@ -1,11 +1,3 @@
-import {useEffect, useState} from "react";
-
-type VersionInfo = {
-    version: string;
-    tag: string;
-    commit: string;
-};
-
 type Props = {
     className?: string;
 };

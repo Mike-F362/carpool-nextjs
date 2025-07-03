@@ -1,5 +1,3 @@
-// 📁 src/pages/invite_admin.tsx
-
 import { useState, useEffect } from "react";
 import AdminLayout from "@/components/admin/layout";
 import InviteLink from "@/components/invite_link";

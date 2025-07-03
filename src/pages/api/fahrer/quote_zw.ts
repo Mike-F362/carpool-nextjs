@@ -7,7 +7,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const anwesend = req.body.anwesend as string[] || [];
     const fahrerA_id = req.body.fahrerA_id as number || 0;
 
-    // Startpunktfahrer mit startpunkt = 1
     const {data: startPunktfahrer, error: err1} = await supabase
         .from("fahrer")
         .select("id")
@@ -18,7 +17,6 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const startPunktIds = new Set(startPunktfahrer.map((f) => f.id));
     const anwesendOhneStart = anwesend.filter((id) => !startPunktIds.has(id));
 
-    // Fahrten abrufen
     const {data: fahrten, error} = await supabase
         .from("fahrten")
         .select("fahrerB_id, anwesend_ids")

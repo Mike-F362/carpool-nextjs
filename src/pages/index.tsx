@@ -3,23 +3,13 @@
 import Head from 'next/head';
 import React, {useEffect, useRef, useState} from 'react';
 import {supabase} from '@/lib/supabaseClient';
-import {tagsManifest} from "next/dist/server/lib/incremental-cache/tags-manifest.external";
-import styles from './index.module.css';
-import Fahrerverwaltung from "@/components/Fahrerverwaltung";
 import NeuerTag from "@/components/new_day";
 import Tour from "@/interfaces/tour";
 import Fahrtentabelle from "@/components/tour_table";
 import Driver from "@/interfaces/driver";
 import AuthModal from "@/components/auth_modal";
-import UserCreateModal from "@/components/user_create_modal";
-import Link from "next/link";
 import FahrerVorschlag from "@/interfaces/driver_suggestion";
 import Header from "@/components/header";
-import AppVersion from "@/components/app_version";
-
-const eqSet = (xs: Set<string>, ys: Set<string>) =>
-    xs.size === ys.size &&
-    [...xs].every((x) => ys.has(x));
 
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<number>>>([]);
