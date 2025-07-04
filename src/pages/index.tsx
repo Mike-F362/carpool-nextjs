@@ -224,8 +224,10 @@ export default function Home() {
 
         setNeuerTagAktiv(false);
 
+        // noinspection ES6MissingAwait
         ladeFahrten();
 
+        // noinspection ES6MissingAwait
         initFahrerQuotes();
 
         setTimeout(() => {
@@ -247,7 +249,10 @@ export default function Home() {
 
         await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
 
+        // noinspection ES6MissingAwait
         ladeFahrten();
+
+        // noinspection ES6MissingAwait
         initFahrerQuotes();
     };
 
