@@ -321,11 +321,9 @@ export default function Home() {
                         {newDayActive && (
                             <NeuerTag
                                 currentDate={currentDate}
-                                anwesenheiten={anwesenheiten}
                                 tours={tours}
                                 drivers={drivers}
                                 loadTours={loadTours}
-                                setAnwesenheiten={setAnwesenheiten}
                                 setTours={setTours}
                                 setCurrentDate={setCurrentDate}
                                 setNewDayActive={setNewDayActive}

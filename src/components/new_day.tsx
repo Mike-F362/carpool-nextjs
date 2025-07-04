@@ -7,12 +7,10 @@ import DriverSuggestion from "@/interfaces/driver_suggestion";
 import {supabase} from "@/lib/supabaseClient";
 
 type Props = {
-    anwesenheiten: Array<Set<number>>,
     tours: Tour[],
     setTours: (d: any[]) => void,
     setNewDayActive: (v: boolean) => void,
     drivers: Driver[],
-    setAnwesenheiten: (liste: Set<number>[]) => void,
     driversSp: number[],
     tableContainerRef: React.RefObject<HTMLDivElement>,
     driversIm: number[],
@@ -52,7 +50,7 @@ export default function NeuerTag({
     useEffect(() => {
         const init = async () => {
             if (tours && tours.length) {
-                const letzteAnwesenheit = anwesenheiten[tours.length-1];
+                const letzteAnwesenheit = new Set(tours[tours.length-1].anwesend_ids);
 
                 setCurrentAttendance(new Set(letzteAnwesenheit));
 
