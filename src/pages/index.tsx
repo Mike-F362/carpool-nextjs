@@ -236,13 +236,13 @@ export default function Home() {
 
     };
 
-    const entferneFahrt = async (id: number) => {
+    const removeTour = async (id: number) => {
         if (!confirm("Diese Tour wirklich löschen?")) return;
         await supabase.from("fahrten").delete().eq("id", id);
         await ladeFahrten();
     };
 
-    const reset = async () => {
+    const resetTours = async () => {
         if (!confirm("Wirklich ALLE Touren löschen?")) return;
 
         localStorage.removeItem("fahrtverteilung");
@@ -275,7 +275,7 @@ export default function Home() {
                         <Header
                             user={user}
                             isAdmin={isAdmin}
-                            reset={reset}
+                            reset={resetTours}
                         /></>
                 ) : (
                     <button className="btn btn-sm btn-outline-primary" onClick={() => setZeigeModal(true)}>
@@ -291,7 +291,6 @@ export default function Home() {
 
                     <div style={{height: '1rem'}}></div>
 
-                    {/*<div className="p-2">*/}
                     <div className="d-flex gap-2 mb-3">
                         <button
                             className="btn btn-primary mb-3"
@@ -319,8 +318,6 @@ export default function Home() {
                             </div>
                         }
                     </div>
-
-                    {/*<div style={{height: '1rem'}}></div>*/}
 
                     <div className="flex-grow-1">
                         {neuerTagAktiv && (
@@ -353,7 +350,7 @@ export default function Home() {
                             anwesenheiten={anwesenheiten}
                             pageSize={pageSize}
                             visibleRows={visibleRows}
-                            entferneFahrt={entferneFahrt}
+                            entferneFahrt={removeTour}
                             tableContainerRef={tableContainerRef}
                             handleScroll={handleScroll}
                         />
