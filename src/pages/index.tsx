@@ -191,7 +191,6 @@ export default function Home() {
 
         setLoading(true);
 
-        // Beispiel: Daten laden, Vorschlag berechnen, etc.
         await Promise.all([ladeFahrerQuotesSp(), ladeFahrerQuotesZw()]);
 
         setLoading(false);
@@ -215,11 +214,10 @@ export default function Home() {
 
     const fahrtSpeichern = async (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: FahrerVorschlag) => {
         const anwesend_ids = Array.from(aktuelleAnwesenheit);
-        const driverSuggestion = aktuellerVorschlag;
         const fahrt: Tour = {
             datum,
             anwesend_ids,
-            ...driverSuggestion,
+            ...(aktuellerVorschlag),
         };
 
         await supabase.from("fahrten").insert(fahrt);
