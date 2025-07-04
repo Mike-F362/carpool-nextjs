@@ -326,7 +326,7 @@ export default function Home() {
                                 drivers={drivers}
                                 loadTours={loadTours}
                                 setAnwesenheiten={setAnwesenheiten}
-                                setDaten={setTours}
+                                setTours={setTours}
                                 setCurrentDate={setCurrentDate}
                                 setNewDayActive={setNewDayActive}
                                 driversSp={driversSp}

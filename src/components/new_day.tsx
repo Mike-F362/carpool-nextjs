@@ -9,7 +9,7 @@ import {supabase} from "@/lib/supabaseClient";
 type Props = {
     anwesenheiten: Array<Set<number>>,
     tours: Tour[],
-    setDaten: (d: any[]) => void,
+    setTours: (d: any[]) => void,
     setNewDayActive: (v: boolean) => void,
     drivers: Driver[],
     setAnwesenheiten: (liste: Set<number>[]) => void,
@@ -30,7 +30,7 @@ type Props = {
 export default function NeuerTag({
                                      anwesenheiten,
                                      tours,
-                                     setDaten,
+                                     setTours,
                                      drivers,
                                      driversSp,
                                      tableContainerRef,
@@ -95,7 +95,7 @@ export default function NeuerTag({
 
         setAktuellerVorschlag(aktuellerVorschlag);
         setCurrentDate(simDatum);
-        setDaten([fahrt, ...tours]);
+        setTours([fahrt, ...tours]);
         setAktuelleAnwesenheit(aktuelleAnwesenheit);
 
         loadTours();
