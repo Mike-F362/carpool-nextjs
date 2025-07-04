@@ -109,60 +109,6 @@ export default function NeuerTag({
 
     }
 
-    async function ladeFahrerQuoteSp(anwesend: number[]): Promise<Map<number, number>> {
-        try {
-            const res = await fetch("/api/fahrer/quote", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({anwesend}),
-            });
-
-            if (!res.ok) {
-                console.error("Fehler beim Abrufen der Fahrerquote");
-                return;
-            }
-
-            const quotes: Object = await res.json();
-            const quoteMap: Map<number, number> = new Map(Object.entries(quotes).map(([key, value]) => {
-                return [parseInt(key), value];
-            }));
-            console.log("QuoteSp:", quoteMap);
-
-            setQuotesSp(quoteMap);
-
-            return quoteMap;
-        } catch (error) {
-            console.error("Netzwerkfehler:", error);
-        }
-    }
-
-    async function ladeFahrerQuoteZw(fahrerA_id: number, anwesend: number[]): Promise<Map<number, number>> {
-        try {
-            const res = await fetch("/api/fahrer/quote_zw", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({fahrerA_id: fahrerA_id, anwesend}),
-            });
-
-            if (!res.ok) {
-                console.error("Fehler beim Abrufen der Fahrerquote");
-                return;
-            }
-
-            const quotes: Object = await res.json();
-            const quoteMap: Map<number, number> = new Map(Object.entries(quotes).map(([key, value]) => {
-                return [parseInt(key), value];
-            }));
-            console.log("QuoteZw:", quoteMap);
-
-            setQuotesZw(quoteMap);
-
-            return quoteMap;
-        } catch (error) {
-            console.error("Netzwerkfehler:", error);
-        }
-    }
-
     function nextDriver(anwesend2: number[], quoteZw: Map<number, number>) {
         anwesend2.sort((a, b) => {
             // TODO: bei Gleichstand: Datum letzte Fahrt vergleichen!
