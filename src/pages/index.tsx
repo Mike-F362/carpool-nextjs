@@ -12,7 +12,6 @@ import FahrerVorschlag from "@/interfaces/driver_suggestion";
 import Header from "@/components/header";
 
 export default function Home() {
-    const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<number>>>([]);
     const [tours, setTours] = useState<Array<Tour>>([]);
     const [currentDate, setCurrentDate] = useState<Date>();
     const [maxDate, setMaxDate] = useState<Date>();
@@ -111,7 +110,6 @@ export default function Home() {
 
             setMaxDate(currentMaxDate);
             setTours(tours);
-            setAnwesenheiten(tours.map(d => new Set(d.anwesend_ids)));
 
         } catch (error) {
             console.error("Netzwerkfehler:", error);
@@ -342,7 +340,6 @@ export default function Home() {
                         <Fahrtentabelle
                             daten={tours}
                             fahrerListe={drivers}
-                            anwesenheiten={anwesenheiten}
                             pageSize={pageSize}
                             visibleRows={visibleRows}
                             entferneFahrt={removeTour}

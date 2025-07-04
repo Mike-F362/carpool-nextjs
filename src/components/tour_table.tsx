@@ -9,7 +9,6 @@ import Tour from "@/interfaces/tour";
 type Props = {
     daten: Tour[],
     fahrerListe: Driver[],
-    anwesenheiten: Set<number>[],
     pageSize: number,
     entferneFahrt: (id: number) => void,
     tableContainerRef: React.RefObject<HTMLDivElement>,
@@ -20,7 +19,6 @@ type Props = {
 export default function Fahrtentabelle({
                                            daten,
                                            fahrerListe,
-                                           anwesenheiten,
                                            pageSize,
                                            entferneFahrt,
                                            tableContainerRef,
@@ -108,7 +106,7 @@ export default function Fahrtentabelle({
                         const zeileIstOffen = geöffneteZeilen.includes(i);
                         const anwesenheitszellen = fahrerListe.map(driver => (
                             <td key={driver.id} className={tour.fahrerA_id === driver.id ? "table-warning" : tour.fahrerB_id === driver.id ? "table-primary" : ""}>
-                                {anwesenheiten[daten.indexOf(tour)]?.has(driver.id) ? "✓" : ""}
+                                {tour?.anwesend_ids.includes(driver.id) ? "✓" : ""}
                             </td>
                         ));
 
