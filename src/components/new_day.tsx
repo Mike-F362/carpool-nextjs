@@ -3,7 +3,7 @@
 import React, {useEffect, useState} from "react";
 import Tour from "@/interfaces/tour";
 import Driver from "@/interfaces/driver";
-import FahrerVorschlag from "@/interfaces/driver_suggestion";
+import DriverSuggestion from "@/interfaces/driver_suggestion";
 import {supabase} from "@/lib/supabaseClient";
 
 type Props = {
@@ -16,7 +16,7 @@ type Props = {
     driversSp: number[],
     tableContainerRef: React.RefObject<HTMLDivElement>,
     driversIm: number[],
-    saveTour: (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: FahrerVorschlag) => void,
+    saveTour: (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: DriverSuggestion) => void,
     currentDate: Date,
     setCurrentDate: (value: (((prevState: Date) => Date) | Date)) => void,
     loadTours: () => Promise<void>,
@@ -28,7 +28,6 @@ type Props = {
 };
 
 export default function NeuerTag({
-                                     anwesenheiten,
                                      tours,
                                      setTours,
                                      drivers,
@@ -45,8 +44,8 @@ export default function NeuerTag({
                                      loadDriverQuotes,
                                      isAdmin
                                  }: Props) {
-    const [aktuellerVorschlag, setAktuellerVorschlag] = useState<FahrerVorschlag>({fahrerA_id: 0, fahrerB_id: 0});
-    const [aktuelleAnwesenheit, setAktuelleAnwesenheit] = useState(new Set<number>());
+    const [currentDriverSuggestion, setCurrentDriverSuggestion] = useState<DriverSuggestion>({fahrerA_id: 0, fahrerB_id: 0});
+    const [currentAttendance, setCurrentAttendance] = useState(new Set<number>());
     const [quotesZw, setQuotesZw] = useState(new Map<number, number>);
     const [quotesSp, setQuotesSp] = useState(new Map<number, number>);
 
@@ -55,12 +54,12 @@ export default function NeuerTag({
             if (tours && tours.length) {
                 const letzteAnwesenheit = anwesenheiten[tours.length-1];
 
-                setAktuelleAnwesenheit(new Set(letzteAnwesenheit));
+                setCurrentAttendance(new Set(letzteAnwesenheit));
 
                 if (letzteAnwesenheit.size > 1) {
-                    setAktuellerVorschlag(await berechneFahrerVorschlag(letzteAnwesenheit));
+                    setCurrentDriverSuggestion(await berechneFahrerVorschlag(letzteAnwesenheit));
                 } else {
-                    setAktuellerVorschlag({fahrerA_id: 0, fahrerB_id: 0});
+                    setCurrentDriverSuggestion({fahrerA_id: 0, fahrerB_id: 0});
                 }
             }
         };
@@ -93,10 +92,10 @@ export default function NeuerTag({
 
         await supabase.from("fahrten").insert(fahrt);
 
-        setAktuellerVorschlag(aktuellerVorschlag);
+        setCurrentDriverSuggestion(aktuellerVorschlag);
         setCurrentDate(simDatum);
         setTours([fahrt, ...tours]);
-        setAktuelleAnwesenheit(aktuelleAnwesenheit);
+        setCurrentAttendance(aktuelleAnwesenheit);
 
         loadTours();
         loadDriverQuotes();
@@ -119,7 +118,7 @@ export default function NeuerTag({
         return {fahrer_id: fahrerB_id, fahrer_text: fahrerB_text};
     }
 
-    async function berechneFahrerVorschlag(anwesend: Set<number>): Promise<FahrerVorschlag> {
+    async function berechneFahrerVorschlag(anwesend: Set<number>): Promise<DriverSuggestion> {
         const fahrerA_id = await berechneFahrerVorschlagSp(anwesend);
         const fahrerB_id = await berechneFahrerVorschlagZw(fahrerA_id, anwesend);
 
@@ -166,15 +165,15 @@ export default function NeuerTag({
     }
 
     const toggleAnwesenheit = async (id: number) => {
-        const kopie = new Set<number>(aktuelleAnwesenheit);
+        const kopie = new Set<number>(currentAttendance);
         if (kopie.has(id)) kopie.delete(id);
         else kopie.add(id);
-        setAktuelleAnwesenheit(kopie);
+        setCurrentAttendance(kopie);
 
         if (kopie.size > 1) {
-            setAktuellerVorschlag(await berechneFahrerVorschlag(kopie));
+            setCurrentDriverSuggestion(await berechneFahrerVorschlag(kopie));
         } else {
-            setAktuellerVorschlag({fahrerA_id: 0, fahrerB_id: 0});
+            setCurrentDriverSuggestion({fahrerA_id: 0, fahrerB_id: 0});
         }
     };
 
@@ -185,7 +184,7 @@ export default function NeuerTag({
     function getDriverQuoteSp(driver: Driver) {
         let res = "";
 
-        if (quotesSp && aktuelleAnwesenheit.size > 1 && aktuelleAnwesenheit.has(driver.id)) {
+        if (quotesSp && currentAttendance.size > 1 && currentAttendance.has(driver.id)) {
             const quoteSp = (driver.startpunkt === 1) ? quotesSp.get(driver.id) | 0 : '-';
             res += String(quoteSp).padStart(4, ' ');
             res += ' x';
@@ -197,8 +196,8 @@ export default function NeuerTag({
     function getDriverQuoteZw(driver: Driver) {
         let res = "";
 
-        if (aktuelleAnwesenheit.size > 1 && aktuelleAnwesenheit.has(driver.id)) {
-            const quoteZw = (driver.startpunkt === 2 || driver.id === aktuellerVorschlag.fahrerA_id) ? quotesZw.get(driver.id) | 0 : '-';
+        if (currentAttendance.size > 1 && currentAttendance.has(driver.id)) {
+            const quoteZw = (driver.startpunkt === 2 || driver.id === currentDriverSuggestion.fahrerA_id) ? quotesZw.get(driver.id) | 0 : '-';
             res += String(quoteZw).padStart(4, ' ');
             res += ' x';
         }
@@ -207,13 +206,13 @@ export default function NeuerTag({
     }
 
     function isNextDriverSp(driver: Driver) {
-        return aktuellerVorschlag.fahrerA_id === driver.id;
+        return currentDriverSuggestion.fahrerA_id === driver.id;
     }
 
     function isNextDriverIm(driver: Driver) {
         const nurZw = new Set(driversIm).difference(new Set(driversSp));
 
-        return (!!aktuelleAnwesenheit.intersection(nurZw).size) && aktuellerVorschlag.fahrerB_id === driver.id;
+        return (!!currentAttendance.intersection(nurZw).size) && currentDriverSuggestion.fahrerB_id === driver.id;
     }
 
     if (loading) {
@@ -228,8 +227,8 @@ export default function NeuerTag({
     }
 
     async function resetForm() {
-        const vorschlag = await berechneFahrerVorschlag(aktuelleAnwesenheit);
-        setAktuellerVorschlag(vorschlag);
+        const vorschlag = await berechneFahrerVorschlag(currentAttendance);
+        setCurrentDriverSuggestion(vorschlag);
     }
 
     return (
@@ -251,7 +250,7 @@ export default function NeuerTag({
                 <div className={
                     "list-group-item d-flex justify-content-between align-items-center"} key={driver.id}>
                     <div className="d-flex align-items-center">
-                        <input className="form-check-input me-2" type="checkbox" id={driver.name} checked={aktuelleAnwesenheit.has(driver.id)} onChange={() => toggleAnwesenheit(driver.id)}/>
+                        <input className="form-check-input me-2" type="checkbox" id={driver.name} checked={currentAttendance.has(driver.id)} onChange={() => toggleAnwesenheit(driver.id)}/>
                     </div>
                     <div className="d-flex align-items-center justify-content-between w-100">
                         <span>{driver.label}</span>
@@ -275,20 +274,20 @@ export default function NeuerTag({
             <div className="mt-3">
                 <div className="mb-2">
                     <label htmlFor="fahrerA" className="form-label"><strong>Fahrer ab Startpunkt 1:</strong></label>
-                    <select className="form-select" id="fahrerA" value={aktuellerVorschlag.fahrerA_id}
+                    <select className="form-select" id="fahrerA" value={currentDriverSuggestion.fahrerA_id}
                             onChange={async e => {
                                 const fahrerA_id = parseInt(e.target.value) | 0;
 
-                                let fahrerB_id = await berechneFahrerVorschlagZw(fahrerA_id, aktuelleAnwesenheit);
+                                let fahrerB_id = await berechneFahrerVorschlagZw(fahrerA_id, currentAttendance);
 
-                                if (driversSp.includes(fahrerB_id) && aktuellerVorschlag.fahrerB_id === fahrerB_id) {
+                                if (driversSp.includes(fahrerB_id) && currentDriverSuggestion.fahrerB_id === fahrerB_id) {
                                     fahrerB_id = fahrerA_id;
                                 }
-                                setAktuellerVorschlag({...aktuellerVorschlag, fahrerA_id, fahrerB_id});
+                                setCurrentDriverSuggestion({...currentDriverSuggestion, fahrerA_id, fahrerB_id});
                             }}>
                         <option value="">Wählen...</option>
                         {
-                            Array.from(aktuelleAnwesenheit)
+                            Array.from(currentAttendance)
                                 .filter(id => driversSp.includes(id))
                                 .map(id => <option key={id} value={id}>{getDriverLabel(id)}</option>)
                         }
@@ -296,18 +295,18 @@ export default function NeuerTag({
                 </div>
                 <div className="mb-2">
                     <label htmlFor="fahrerB" className="form-label"><strong>Fahrer ab Zwischenstopp:</strong></label>
-                    <select className="form-select" id="fahrerB" value={aktuellerVorschlag.fahrerB_id}
-                            onChange={e => setAktuellerVorschlag({...aktuellerVorschlag, fahrerB_id: parseInt(e.target.value) | 0})}>
+                    <select className="form-select" id="fahrerB" value={currentDriverSuggestion.fahrerB_id}
+                            onChange={e => setCurrentDriverSuggestion({...currentDriverSuggestion, fahrerB_id: parseInt(e.target.value) | 0})}>
                         <option value="">Wählen...</option>
-                        {Array.from(aktuelleAnwesenheit)
+                        {Array.from(currentAttendance)
                             .filter(id => driversIm.includes(id) &&
-                                (!driversSp.includes(id) || aktuellerVorschlag.fahrerA_id === id)
+                                (!driversSp.includes(id) || currentDriverSuggestion.fahrerA_id === id)
                             )
                             .map(id => <option key={id} value={id}>{getDriverLabel(id)}</option>)}
                     </select>
                 </div>
             </div>
-            <button className="btn btn-success mt-2" disabled={aktuelleAnwesenheit.size <= 1} onClick={() => saveTour(currentDate, aktuelleAnwesenheit, aktuellerVorschlag)}>Speichern</button>
+            <button className="btn btn-success mt-2" disabled={currentAttendance.size <= 1} onClick={() => saveTour(currentDate, currentAttendance, currentDriverSuggestion)}>Speichern</button>
         </div>
     );
 }
