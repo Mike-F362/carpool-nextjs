@@ -249,27 +249,27 @@ export default function NeuerTag({
                 <input type="date" className="form-control" id="datum" value={datum.toISOString().split("T")[0]} onChange={e => setDatum(new Date(e.target.value || ''))}/>
             </div>
             <h5>Wer ist da?</h5>
-            {mitglieder.map(mitglied => (
+            {mitglieder.map(driver => (
                 <div className={
-                    "list-group-item d-flex justify-content-between align-items-center"} key={mitglied.id}>
+                    "list-group-item d-flex justify-content-between align-items-center"} key={driver.id}>
                     <div className="d-flex align-items-center">
-                        <input className="form-check-input me-2" type="checkbox" id={mitglied.name} checked={aktuelleAnwesenheit.has(mitglied.id)} onChange={() => toggleAnwesenheit(mitglied.id)}/>
+                        <input className="form-check-input me-2" type="checkbox" id={driver.name} checked={aktuelleAnwesenheit.has(driver.id)} onChange={() => toggleAnwesenheit(driver.id)}/>
                     </div>
                     <div className="d-flex align-items-center justify-content-between w-100">
-                        <span>{mitglied.label}</span>
+                        <span>{driver.label}</span>
                         <span style={{width: "6rem", textAlign: "right"}}>
                          <span style={{minWidth: "5rem"}} className="d-flex justify-content-end gap-1">
-                            {istDranSp(mitglied) && <span className="badge bg-warning text-dark">🚗</span>}
-                             {istDranZw(mitglied) && <span className="badge bg-primary">🚗</span>}
+                            {istDranSp(driver) && <span className="badge bg-warning text-dark">🚗</span>}
+                             {istDranZw(driver) && <span className="badge bg-primary">🚗</span>}
                         </span>
                         </span>
                     </div>
                     <div className="d-flex gap-2" style={{minWidth: "5rem", justifyContent: "flex-end"}}>
                         <span className="text-end text-muted" style={{width: "3rem"}}>
-                          {getDriverQuoteSp(mitglied)}
+                          {getDriverQuoteSp(driver)}
                         </span>
                         <span className="text-end text-muted" style={{width: "3rem"}}>
-                          {getDriverQuoteZw(mitglied)}
+                          {getDriverQuoteZw(driver)}
                         </span>
                     </div>
                 </div>
