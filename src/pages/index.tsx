@@ -340,6 +340,8 @@ export default function Home() {
                         <Fahrtentabelle
                             daten={tours}
                             fahrerListe={drivers}
+                            driversSp={driversSp}
+                            driversIm={driversIm}
                             pageSize={pageSize}
                             visibleRows={visibleRows}
                             entferneFahrt={removeTour}

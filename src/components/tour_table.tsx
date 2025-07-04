@@ -1,6 +1,6 @@
 "use client";
 
-import React, {useState} from "react";
+import React, {useEffect, useState} from "react";
 
 import Driver from "@/interfaces/driver";
 import styles from "./tour_table.module.css";
@@ -13,7 +13,9 @@ type Props = {
     entferneFahrt: (id: number) => void,
     tableContainerRef: React.RefObject<HTMLDivElement>,
     handleScroll: () => void,
-    visibleRows
+    visibleRows: number,
+    driversSp: number[],
+    driversIm: number[]
 };
 
 export default function Fahrtentabelle({
@@ -23,15 +25,31 @@ export default function Fahrtentabelle({
                                            entferneFahrt,
                                            tableContainerRef,
                                            handleScroll,
-                                           visibleRows
+                                           visibleRows,
+                                           driversSp,
+                                           driversIm
                                        }: Props) {
+    const [activeRow, setActiveRow] = useState<number>();
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
-    const [selectedAnwesenheit, setSelectedAnwesenheit] = useState<number[]>([]);
+    const [selectedTour, setSelectedTour] = useState<Tour>();
+    const [driverIdsImOnly, setDriverIdsImOnly] = useState<number[]>([]);
 
     const rowHeight = 36;
     const maxHeight = (rowHeight * pageSize); // + 60;
 
-    const zeileUmschalten = (index: number) => {
+    useEffect(() => {
+        const init = async () => {
+            if (driversSp && driversIm) {
+                const newDriversImOnly = driversIm.filter(id => !driversSp.includes(id));
+                setDriverIdsImOnly(newDriversImOnly);
+                console.log('set newDriversImOnly', newDriversImOnly);
+            }
+        };
+
+        init();
+    }, [driversSp, driversIm]);
+
+    const toggleRow = (index: number) => {
         setGeöffneteZeilen(prev =>
             prev.includes(index)
                 ? prev.filter(i => i !== index)
@@ -47,12 +65,38 @@ export default function Fahrtentabelle({
         return fahrerListe.find(item => item.id === f.fahrerB_id);
     }
 
-    // function isSameAnwesenheit(fahrtAnwesend, selectedAnwesend) {
-    // const filter = (arr) => arr.filter(id => !zwischenIds.has(id)).sort();
-    // const a = filter(fahrtAnwesend);
-    // const b = filter(selectedAnwesend);
-    // return JSON.stringify(a) === JSON.stringify(b);
-    // }
+    function isSameAttendanceSp(attendanceA: number[], attendanceB: number[]) {
+        const filter = (arr: number[]) => arr.filter(id => driversSp.includes(id)).sort();
+        const a = filter(attendanceA);
+        const b = filter(attendanceB);
+        return a.length > 1 && JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    function isSameAttendanceIm(fahrerA_id: number, attendanceA: number[], fahrerA_id_B: number, attendanceB: number[]) {
+        const filter = (arr: number[]) => arr.filter(id => id === fahrerA_id || driverIdsImOnly.includes(id)).sort();
+        const a = filter(attendanceA);
+        const b = filter(attendanceB);
+        return a.length > 1 && fahrerA_id && fahrerA_id === fahrerA_id_B && a.includes(fahrerA_id) && JSON.stringify(a) === JSON.stringify(b);
+    }
+
+    function attendanceClass(tourA: Tour, tourB: Tour) {
+        if (!tourA || !tourB) {
+            return '';
+        }
+
+        const sameAttendanceSp = isSameAttendanceSp(tourA?.anwesend_ids, tourB?.anwesend_ids);
+        const sameAttendanceIm = isSameAttendanceIm(tourA?.fahrerA_id, tourA?.anwesend_ids, tourB?.fahrerA_id, tourB?.anwesend_ids);
+
+        if (sameAttendanceSp && sameAttendanceIm) {
+            return styles.sameTourImSp;
+        } else if (sameAttendanceSp) {
+            return styles.sameTourSp;
+        } else if (sameAttendanceIm) {
+            return styles.sameTourIm;
+        } else {
+            return '';
+        }
+    }
 
     function eqArraySet(a: number[], b: number[]): boolean {
         if (a.length !== b.length) return false;
@@ -113,10 +157,16 @@ export default function Fahrtentabelle({
                         return (
                             <React.Fragment key={i}>
                                 <tr
-                                    className={"clickable-row" + (eqArraySet(tour.anwesend_ids, selectedAnwesenheit) ? " table-active" : "")}
+                                    className={
+                                        "clickable-row " +
+                                        attendanceClass(tour, selectedTour)
+                                        + " " +
+                                        (activeRow === i ? "table-active" : "")
+                                    }
                                     onClick={() => {
-                                        zeileUmschalten(i);
-                                        setSelectedAnwesenheit(tour.anwesend_ids);
+                                        toggleRow(i);
+                                        setActiveRow(i);
+                                        setSelectedTour(tour);
                                     }}
                                     style={{cursor: "pointer"}}
                                 >
