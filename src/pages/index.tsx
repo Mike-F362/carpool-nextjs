@@ -13,29 +13,28 @@ import Header from "@/components/header";
 
 export default function Home() {
     const [anwesenheiten, setAnwesenheiten] = useState<Array<Set<number>>>([]);
-    const [daten, setDaten] = useState<Array<Tour>>([]);
-    const [datum, setDatum] = useState<Date>();
+    const [tours, setTours] = useState<Array<Tour>>([]);
+    const [currentDate, setCurrentDate] = useState<Date>();
     const [maxDate, setMaxDate] = useState<Date>();
 
-    const [neuerTagAktiv, setNeuerTagAktiv] = useState(false);
+    const [newDayActive, setNewDayActive] = useState(false);
 
     const [pageSize, setPageSize] = useState(20);
     const [visibleRows, setVisibleRows] = useState(pageSize);
 
     const tableContainerRef = useRef(null);
 
-    const [fahrerListe, setFahrerListe] = useState<Driver[]>([]);
-    const [mitglieder, setMitglieder] = useState<Driver[]>([]);
-    const [startpunkt1, setStartpunkt1] = useState<number[]>([]);
-    const [zwischenstopp, setZwischenstopp] = useState<number[]>([]);
+    const [drivers, setDrivers] = useState<Driver[]>([]);
+    const [driversSp, setDriversSp] = useState<number[]>([]);
+    const [driversIm, setDriversIm] = useState<number[]>([]);
 
     const [session, setSession] = useState<any>(null);
     const [user, setUser] = useState<any>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
-    const [zeigeModal, setZeigeModal] = useState(false);
+    const [showModal, setShowModal] = useState(false);
 
     const [allQuotesSp, setAllQuotesSp] = useState(new Map<string, Map<number, number>>);
-    const [allQuotesZw, setAllQuotesZw] = useState(new Map<number, Map<string, Map<number, number>>>);
+    const [allQuotesIm, setAllQuotesIm] = useState(new Map<number, Map<string, Map<number, number>>>);
 
     const [loading, setLoading] = useState(true);
 
@@ -59,35 +58,34 @@ export default function Home() {
     }, []);
 
     useEffect(() => {
-        initFahrerQuotes();
+        loadDriverQuotes();
     }, []);
 
     useEffect(() => {
-        ladeFahrten();
+        loadTours();
     }, []);
 
     useEffect(() => {
         const ladeFahrer = async () => {
             const {data} = await supabase.from("fahrer").select("*");
             if (data) {
-                const fahrer: Driver[] = data.map(e => ({
+                const driver: Driver[] = data.map(e => ({
                     id: e.id,
                     name: e.name,
                     label: e.label,
                     startpunkt: e.startpunkt
                 }));
-                const sp1 = fahrer.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
-                setStartpunkt1(sp1)
-                const zw = fahrer.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
-                setZwischenstopp(sp1.concat(zw));
-                setFahrerListe(fahrer);
-                setMitglieder(fahrer);
+                const sp1 = driver.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
+                setDriversSp(sp1)
+                const zw = driver.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
+                setDriversIm(sp1.concat(zw));
+                setDrivers(driver);
             }
         };
         ladeFahrer();
     }, []);
 
-    async function ladeFahrten() {
+    async function loadTours() {
         try {
             const res = await fetch("/api/tours/list", {
                 method: "GET",
@@ -112,7 +110,7 @@ export default function Home() {
             const currentMaxDate = data.maxDate ? new Date(data.maxDate) : null;
 
             setMaxDate(currentMaxDate);
-            setDaten(tours);
+            setTours(tours);
             setAnwesenheiten(tours.map(d => new Set(d.anwesend_ids)));
 
         } catch (error) {
@@ -120,7 +118,7 @@ export default function Home() {
         }
     }
 
-    async function ladeFahrerQuotesSp(): Promise<Map<number, number>[]> {
+    async function loadDriverQuotesSp(): Promise<Map<number, number>[]> {
         try {
             const res = await fetch("/api/fahrer/quotes_sp", {
                 method: "POST",
@@ -151,7 +149,7 @@ export default function Home() {
         }
     }
 
-    async function ladeFahrerQuotesZw(): Promise<Map<number, number>[]> {
+    async function loadDriverQuotesIm(): Promise<Map<number, number>[]> {
         try {
             const res = await fetch("/api/fahrer/quotes_zw", {
                 method: "POST",
@@ -180,25 +178,25 @@ export default function Home() {
 
             console.log("QuoteSp:", allQuotes);
 
-            setAllQuotesZw(allQuotes);
+            setAllQuotesIm(allQuotes);
         } catch (error) {
             console.error("Netzwerkfehler:", error);
         }
     }
 
-    const initFahrerQuotes = async () => {
-        console.log("Initializing fahrer quotes...");
+    const loadDriverQuotes = async () => {
+        console.log("Initializing driver quotes...");
 
         setLoading(true);
 
-        await Promise.all([ladeFahrerQuotesSp(), ladeFahrerQuotesZw()]);
+        await Promise.all([loadDriverQuotesSp(), loadDriverQuotesIm()]);
 
         setLoading(false);
 
-        console.log("Initialized  fahrer quotes.");
+        console.log("Initialized  driver quotes.");
     };
 
-    const neuerTagStarten = () => {
+    const newTour = () => {
         const heute = new Date();
         const lastDate = maxDate;
 
@@ -208,11 +206,11 @@ export default function Home() {
             tag.setDate(tag.getDate() + 1);
         } while (tag.getDay() === 0 || tag.getDay() === 6); // Sa+So überspringen
 
-        setDatum(tag);
-        setNeuerTagAktiv(true);
+        setCurrentDate(tag);
+        setNewDayActive(true);
     };
 
-    const fahrtSpeichern = async (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: FahrerVorschlag) => {
+    const saveTour = async (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: FahrerVorschlag) => {
         const anwesend_ids = Array.from(aktuelleAnwesenheit);
         const fahrt: Tour = {
             datum,
@@ -222,13 +220,13 @@ export default function Home() {
 
         await supabase.from("fahrten").insert(fahrt);
 
-        setNeuerTagAktiv(false);
+        setNewDayActive(false);
 
         // noinspection ES6MissingAwait
-        ladeFahrten();
+        loadTours();
 
         // noinspection ES6MissingAwait
-        initFahrerQuotes();
+        loadDriverQuotes();
 
         setTimeout(() => {
             tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
@@ -239,7 +237,7 @@ export default function Home() {
     const removeTour = async (id: number) => {
         if (!confirm("Diese Tour wirklich löschen?")) return;
         await supabase.from("fahrten").delete().eq("id", id);
-        await ladeFahrten();
+        await loadTours();
     };
 
     const resetTours = async () => {
@@ -250,17 +248,17 @@ export default function Home() {
         await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
 
         // noinspection ES6MissingAwait
-        ladeFahrten();
+        loadTours();
 
         // noinspection ES6MissingAwait
-        initFahrerQuotes();
+        loadDriverQuotes();
     };
 
     const handleScroll = () => {
         if (!tableContainerRef.current) return;
         const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;
         if (scrollTop + clientHeight >= scrollHeight - 10) {
-            setVisibleRows((prev) => Math.min(prev + 20, daten.length));
+            setVisibleRows((prev) => Math.min(prev + 20, tours.length));
         }
     }
     return (
@@ -278,13 +276,13 @@ export default function Home() {
                             reset={resetTours}
                         /></>
                 ) : (
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => setZeigeModal(true)}>
+                    <button className="btn btn-sm btn-outline-primary" onClick={() => setShowModal(true)}>
                         Anmelden
                     </button>
                 )}
             </div>
 
-            {zeigeModal && <AuthModal onClose={() => setZeigeModal(false)}/>}
+            {showModal && <AuthModal onClose={() => setShowModal(false)}/>}
 
             {session ? (
                 <main className="d-flex flex-column">
@@ -294,9 +292,9 @@ export default function Home() {
                     <div className="d-flex gap-2 mb-3">
                         <button
                             className="btn btn-primary mb-3"
-                            onClick={neuerTagAktiv ? () => setNeuerTagAktiv(false) : neuerTagStarten}
+                            onClick={newDayActive ? () => setNewDayActive(false) : newTour}
                         >
-                            {neuerTagAktiv ? "Abbrechen" : "Neuer Tag"}
+                            {newDayActive ? "Abbrechen" : "Neuer Tag"}
                         </button>
                         {
                             <div className="input-group mb-3" style={{width: '200px'}} hidden={!isAdmin}>
@@ -320,33 +318,32 @@ export default function Home() {
                     </div>
 
                     <div className="flex-grow-1">
-                        {neuerTagAktiv && (
+                        {newDayActive && (
                             <NeuerTag
-                                datum={datum}
+                                currentDate={currentDate}
                                 anwesenheiten={anwesenheiten}
-                                daten={daten}
-                                fahrerListe={fahrerListe}
-                                mitglieder={mitglieder}
-                                ladeFahrten={ladeFahrten}
+                                tours={tours}
+                                drivers={drivers}
+                                loadTours={loadTours}
                                 setAnwesenheiten={setAnwesenheiten}
-                                setDaten={setDaten}
-                                setDatum={setDatum}
-                                setNeuerTagAktiv={setNeuerTagAktiv}
-                                startpunkt1={startpunkt1}
+                                setDaten={setTours}
+                                setCurrentDate={setCurrentDate}
+                                setNewDayActive={setNewDayActive}
+                                driversSp={driversSp}
                                 tableContainerRef={tableContainerRef}
-                                zwischenstopp={zwischenstopp}
-                                fahrtSpeichern={fahrtSpeichern}
-                                initFahrerQuotes={initFahrerQuotes}
+                                driversIm={driversIm}
+                                saveTour={saveTour}
+                                loadDriverQuotes={loadDriverQuotes}
                                 allQuotesSp={allQuotesSp}
-                                allQuotesZw={allQuotesZw}
+                                allQuotesIm={allQuotesIm}
                                 loading={loading}
                                 isAdmin={isAdmin}
                             />
                         )}
 
                         <Fahrtentabelle
-                            daten={daten}
-                            fahrerListe={fahrerListe}
+                            daten={tours}
+                            fahrerListe={drivers}
                             anwesenheiten={anwesenheiten}
                             pageSize={pageSize}
                             visibleRows={visibleRows}
