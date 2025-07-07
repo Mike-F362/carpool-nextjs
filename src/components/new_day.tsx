@@ -128,17 +128,17 @@ export default function NeuerTag({
     }
 
     async function berechneFahrerVorschlagSp(anwesend: Set<number>): Promise<number> {
-        const anwesend1 = Array.from(anwesend)
-            .filter(n => driversSp.includes(n));
-
         const anwesendSp = Array.from(anwesend).filter(n => driversSp.includes(n));
 
-        // const quoteSp = await ladeFahrerQuoteSp(anwesend1);
-        const quotesSpKey = Array.from(anwesendSp).join('-');
+        let quotesSpKey = '';
+        if (anwesendSp.length > 1) {
+            quotesSpKey = Array.from(anwesendSp).sort().join('-');
+        }
+
         const quoteSp = allQuotesSp.get(quotesSpKey) || new Map();
         setQuotesSp(quoteSp);
 
-        const {fahrer_id: fahrerA_id, fahrer_text: fahrerA_text} = nextDriver(anwesend1, quoteSp);
+        const {fahrer_id: fahrerA_id, fahrer_text: fahrerA_text} = nextDriver(anwesendSp, quoteSp);
 
         console.log(`Fahrer A ${fahrerA_text} quote`, quoteSp);
 
@@ -150,7 +150,7 @@ export default function NeuerTag({
 
         // const quoteZw = await ladeFahrerQuoteZw(fahrerA_id, anwesendZw);
         const driverQuotesZw = allQuotesIm.get(fahrerA_id) || new Map();
-        const quotesZwKey = Array.from(anwesendZw).join('-');
+        const quotesZwKey = Array.from(anwesendZw).sort().join('-');
         const quoteZw = driverQuotesZw.get(quotesZwKey) || new Map();
         setQuotesZw(quoteZw);
 
