@@ -182,7 +182,9 @@ export default function NeuerTag({
     function getDriverQuoteSp(driver: Driver) {
         let res = "";
 
-        if (quotesSp && currentAttendance.size > 1 && currentAttendance.has(driver.id)) {
+        const currentAttendanceSp = Array.from(currentAttendance).filter(n => driversSp.includes(n));
+
+        if (quotesSp && currentAttendanceSp.length > 1 && currentAttendanceSp.includes(driver.id)) {
             const quoteSp = (driver.startpunkt === 1) ? quotesSp.get(driver.id) | 0 : '-';
             res += String(quoteSp).padStart(4, ' ');
             res += ' x';
