@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
+import { withRoleAuth } from "@/lib/withRoleAuth";
+
+export const getServerSideProps = withRoleAuth("admin");
 
 export default function UserAdminPage() {
     const [users, setUsers] = useState<any[]>([]);

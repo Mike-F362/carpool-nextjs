@@ -1,6 +1,8 @@
-// 📁 src/pages/fahrer_admin.tsx
 import {useEffect, useState} from "react";
 import AdminLayout from "@/components/admin/layout";
+import { withRoleAuth } from "@/lib/withRoleAuth";
+
+export const getServerSideProps = withRoleAuth("admin");
 
 interface Fahrer {
     id: string;
