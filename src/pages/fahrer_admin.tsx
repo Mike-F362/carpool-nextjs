@@ -1,18 +1,12 @@
 import {useEffect, useState} from "react";
 import AdminLayout from "@/components/admin/layout";
 import { withRoleAuth } from "@/lib/withRoleAuth";
+import Driver from "@/interfaces/driver";
 
 export const getServerSideProps = withRoleAuth("admin");
 
-interface Fahrer {
-    id: string;
-    name: string;
-    startpunkt: string;
-    label: string;
-}
-
 export default function FahrerAdminPage() {
-    const [fahrer, setFahrer] = useState<Fahrer[]>([]);
+    const [fahrer, setFahrer] = useState<Driver[]>([]);
     const [name, setName] = useState("");
     const [startpunkt, setStartpunkt] = useState("1");
     const [label, setLabel] = useState("");
@@ -38,7 +32,7 @@ export default function FahrerAdminPage() {
         await fetchFahrer();
     };
 
-    const handleDelete = async (id: string) => {
+    const handleDelete = async (id: number) => {
         await fetch("/api/fahrer/delete", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
@@ -47,7 +41,7 @@ export default function FahrerAdminPage() {
         await fetchFahrer();
     };
 
-    const handleUpdate = async (id: string, field: keyof Fahrer, value: string) => {
+    const handleUpdate = async (id: number, field: keyof Driver, value: string) => {
         await fetch("/api/fahrer/update", {
             method: "POST",
             headers: {"Content-Type": "application/json"},
