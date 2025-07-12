@@ -13,7 +13,7 @@ async function handler(_req: NextApiRequest, res: NextApiResponse) {
     if (error) return res.status(500).json({error: error.message});
 
     const users = data.users.map((u: SupabaseUser): User => ({
-        id: Number(u.id),
+        id: u.id,
         email: u.email,
         role: u.user_metadata?.role || 'user'
     }));
