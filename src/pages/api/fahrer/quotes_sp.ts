@@ -1,10 +1,8 @@
-import {createPagesServerClient as createRouteHandlerSupabaseClient} from '@supabase/auth-helpers-nextjs';
 import {NextApiRequest, NextApiResponse} from "next";
 import {calcQuoteSp, get_drivers} from "@/pages/api/fahrer/calc_qoutes";
+import {supabase} from "@/lib/supabaseClient";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const supabase = createRouteHandlerSupabaseClient({req, res});
-
     const zwischenIds = await get_drivers(supabase, 2);
 
     const {data, error} = await supabase.rpc("get_unique_attendance_ids");

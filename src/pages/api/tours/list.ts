@@ -1,15 +1,15 @@
-import type { NextApiRequest, NextApiResponse } from "next";
-import { supabase } from "@/lib/supabaseClient";
+import type {NextApiRequest, NextApiResponse} from "next";
+import {supabase} from "@/lib/supabaseClient";
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    const { data, error } = await supabase.rpc("load_tours");
+export default async function handler(_req: NextApiRequest, res: NextApiResponse) {
+    const {data, error} = await supabase.rpc("load_tours");
 
     if (error) {
-        console.error("Fehler beim Laden der Fahrten:", error.message);
-        return res.status(500).json({ error: error.message });
+        console.error("Error loading tours:", error.message);
+        return res.status(500).json({error: error.message});
     }
 
-    const tours = data.map((row) => ({
+    const tours = data.map((row: { id: number; datum: Date; fahrera_id: number; fahrerb_id: number; anwesend_ids: number[]; }) => ({
         id: row.id,
         datum: row.datum,
         fahrerA_id: row.fahrera_id,
@@ -19,5 +19,5 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
 
     const maxDate = data.length > 0 ? data[0].max_datum : null;
 
-    return res.status(200).json({ tours, maxDate });
+    return res.status(200).json({tours, maxDate});
 }

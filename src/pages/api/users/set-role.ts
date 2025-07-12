@@ -1,18 +1,17 @@
-import { NextApiRequest, NextApiResponse } from 'next';
-import {createClient} from "@supabase/supabase-js";
+import {NextApiRequest, NextApiResponse} from 'next';
+import {supabaseAdmin} from "@/lib/supabaseClientAdmin";
+import {withAdminAuth} from '@/lib/middleware/withAdminAuth'
 
-const supabase = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!
-);
+const securedHandler = withAdminAuth(handler);
+export default securedHandler;
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  const { id, role } = req.body;
+async function handler(req: NextApiRequest, res: NextApiResponse) {
+    const {id, role} = req.body;
 
-  const { error } = await supabase.auth.admin.updateUserById(id, {
-    user_metadata: { role }
-  });
+    const {error} = await supabaseAdmin.auth.admin.updateUserById(id, {
+        user_metadata: {role}
+    });
 
-  if (error) return res.status(500).json({ error: error.message });
-  res.status(200).json({ success: true });
+    if (error) return res.status(500).json({error: error.message});
+    res.status(200).json({success: true});
 }
