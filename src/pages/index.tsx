@@ -3,6 +3,7 @@
 import Head from 'next/head';
 import React, {useEffect, useRef, useState} from 'react';
 import {supabase} from '@/lib/supabaseClient';
+import {User as SupabaseUser} from "@supabase/auth-js";
 import NeuerTag from "@/components/new_day";
 import Tour from "@/interfaces/tour";
 import Fahrtentabelle from "@/components/tour_table";
@@ -46,148 +47,184 @@ export default function Home() {
                 setIsAdmin(usr?.user_metadata?.role === "admin");
             });
         });
-        supabase.auth.onAuthStateChange(async (_event, sess) => {
+        const {
+            data: {subscription},
+        } = supabase.auth.onAuthStateChange((_event, sess) => {
             setSession(sess);
             supabase.auth.getUser().then(value => {
                 const usr = value.data?.user;
                 setUser(usr);
                 setIsAdmin(usr?.user_metadata?.role === "admin");
+
+                loadDriverQuotes(usr);
+                loadTours(usr);
+                ladeFahrer(usr);
             });
         });
+
+        return () => subscription.unsubscribe()
     }, []);
 
-    useEffect(() => {
-        loadDriverQuotes();
-    }, []);
+    async function ladeFahrer(user: SupabaseUser) {
+        try {
+            if (user) {
+                const res = await fetch("/api/fahrer/list", {
+                    method: "GET",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${session?.access_token}`,
+                    },
+                });
 
-    useEffect(() => {
-        loadTours();
-    }, []);
+                if (!res.ok) {
+                    console.error("Fehler beim Abrufen der Fahrerdaten");
+                    return;
+                }
 
-    useEffect(() => {
-        const ladeFahrer = async () => {
-            const {data} = await supabase.from("fahrer").select("*");
-            if (data) {
-                const driver: Driver[] = data.map(e => ({
+                const data = await res.json();
+
+                const driver: Driver[] = data.map((e: { id: number; name: string; label: string; startpunkt: number; }) => ({
                     id: e.id,
                     name: e.name,
                     label: e.label,
                     startpunkt: e.startpunkt
                 }));
+
                 const sp1 = driver.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
-                setDriversSp(sp1)
                 const zw = driver.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
+
+                setDriversSp(sp1)
                 setDriversIm(sp1.concat(zw));
                 setDrivers(driver);
+            } else {
+                setDriversSp([])
+                setDriversIm([]);
+                setDrivers([]);
             }
-        };
-        ladeFahrer();
-    }, []);
-
-    async function loadTours() {
-        try {
-            const res = await fetch("/api/tours/list", {
-                method: "GET",
-                headers: {"Content-Type": "application/json"},
-            });
-
-            if (!res.ok) {
-                console.error("Fehler beim Abrufen der Fahrten");
-                return;
-            }
-
-            const data = await res.json();
-
-            const tours = data.tours.map(row => ({
-                id: row.id,
-                datum: row.datum,
-                fahrerA_id: row.fahrerA_id,
-                fahrerB_id: row.fahrerB_id,
-                anwesend_ids: row.anwesend_ids,
-            }));
-
-            const currentMaxDate = data.maxDate ? new Date(data.maxDate) : null;
-
-            setMaxDate(currentMaxDate);
-            setTours(tours);
-
         } catch (error) {
             console.error("Netzwerkfehler:", error);
         }
     }
 
-    async function loadDriverQuotesSp(): Promise<Map<number, number>[]> {
+    async function loadTours(user: SupabaseUser) {
         try {
-            const res = await fetch("/api/fahrer/quotes_sp", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-            });
+            if (user) {
+                const res = await fetch("/api/tours/list", {
+                    method: "GET",
+                    credentials: "include",
+                    headers: {"Content-Type": "application/json"},
+                });
 
-            if (!res.ok) {
-                console.error("Fehler beim Abrufen der Fahrerquote");
-                return;
-            }
+                if (!res.ok) {
+                    console.error("Fehler beim Abrufen der Fahrten");
+                    return;
+                }
 
-            const quotes: Object = await res.json();
-            const allQuotes = Object.keys(quotes).reduce((obj, item) => {
-                const quoteMap: Map<number, number> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
-                    return [parseInt(key), value as number];
+                const data = await res.json();
+
+                const tours = data.tours.map((row: { id: number; datum: string; fahrerA_id: number; fahrerB_id: number; anwesend_ids: number[]; }) => ({
+                    id: row.id,
+                    datum: row.datum,
+                    fahrerA_id: row.fahrerA_id,
+                    fahrerB_id: row.fahrerB_id,
+                    anwesend_ids: row.anwesend_ids,
                 }));
 
-                obj.set(item, quoteMap);
+                const currentMaxDate = data.maxDate ? new Date(data.maxDate) : null;
 
-                return obj
-            }, new Map<string, Map<number, number>>());
-
-            console.log("QuoteSp:", allQuotes);
-
-            setAllQuotesSp(allQuotes);
+                setMaxDate(currentMaxDate);
+                setTours(tours);
+            } else {
+                setMaxDate(null);
+                setTours([]);
+            }
         } catch (error) {
             console.error("Netzwerkfehler:", error);
         }
     }
 
-    async function loadDriverQuotesIm(): Promise<Map<number, number>[]> {
+    async function loadDriverQuotesSp(user: SupabaseUser): Promise<Map<number, number>[]> {
         try {
-            const res = await fetch("/api/fahrer/quotes_zw", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-            });
+            if (user) {
+                const res = await fetch("/api/fahrer/quotes_sp", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {"Content-Type": "application/json"},
+                });
 
-            if (!res.ok) {
-                console.error("Fehler beim Abrufen der Fahrerquote");
-                return;
-            }
+                if (!res.ok) {
+                    console.error("Fehler beim Abrufen der Fahrerquote");
+                    return;
+                }
 
-            const quotes: Object = await res.json();
-            const allQuotes = Object.keys(quotes).reduce((obj, item) => {
-                const quoteMap: Map<string, Map<number, number>> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
-                    const innerQuoteMap: Map<number, number> = new Map(Object.entries(value).map(([key, value]) => {
+                const quotes: Object = await res.json();
+                const allQuotes = Object.keys(quotes).reduce((obj, item) => {
+                    const quoteMap: Map<number, number> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
                         return [parseInt(key), value as number];
                     }));
 
-                    return [key, innerQuoteMap];
-                }));
+                    obj.set(item, quoteMap);
 
-                obj.set(parseInt(item), quoteMap);
+                    return obj
+                }, new Map<string, Map<number, number>>());
 
-                return obj
-            }, new Map<number, Map<string, Map<number, number>>>());
+                console.debug("QuoteSp:", allQuotes);
 
-            console.log("QuoteSp:", allQuotes);
-
-            setAllQuotesIm(allQuotes);
+                setAllQuotesSp(allQuotes);
+            } else {
+                setAllQuotesSp(new Map<string, Map<number, number>>());
+            }
         } catch (error) {
             console.error("Netzwerkfehler:", error);
         }
     }
 
-    const loadDriverQuotes = async () => {
+    async function loadDriverQuotesIm(user: SupabaseUser): Promise<Map<number, number>[]> {
+        try {
+            if (user) {
+                const res = await fetch("/api/fahrer/quotes_zw", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {"Content-Type": "application/json"},
+                });
+
+                if (!res.ok) {
+                    console.error("Fehler beim Abrufen der Fahrerquote");
+                    return;
+                }
+
+                const quotes: Object = await res.json();
+                const allQuotes = Object.keys(quotes).reduce((obj, item) => {
+                    const quoteMap: Map<string, Map<number, number>> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
+                        const innerQuoteMap: Map<number, number> = new Map(Object.entries(value).map(([key, value]) => {
+                            return [parseInt(key), value as number];
+                        }));
+
+                        return [key, innerQuoteMap];
+                    }));
+
+                    obj.set(parseInt(item), quoteMap);
+
+                    return obj
+                }, new Map<number, Map<string, Map<number, number>>>());
+
+                console.debug("QuoteSp:", allQuotes);
+
+                setAllQuotesIm(allQuotes);
+            } else {
+                setAllQuotesIm(new Map<number, Map<string, Map<number, number>>>());
+            }
+        } catch (error) {
+            console.error("Netzwerkfehler:", error);
+        }
+    }
+
+    const loadDriverQuotes = async (user: SupabaseUser) => {
         console.log("Initializing driver quotes...");
 
         setLoading(true);
 
-        await Promise.all([loadDriverQuotesSp(), loadDriverQuotesIm()]);
+        await Promise.all([loadDriverQuotesSp(user), loadDriverQuotesIm(user)]);
 
         setLoading(false);
 
@@ -221,10 +258,10 @@ export default function Home() {
         setNewDayActive(false);
 
         // noinspection ES6MissingAwait
-        loadTours();
+        loadTours(user);
 
         // noinspection ES6MissingAwait
-        loadDriverQuotes();
+        loadDriverQuotes(user);
 
         setTimeout(() => {
             tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
@@ -235,7 +272,7 @@ export default function Home() {
     const removeTour = async (id: number) => {
         if (!confirm("Diese Tour wirklich löschen?")) return;
         await supabase.from("fahrten").delete().eq("id", id);
-        await loadTours();
+        await loadTours(user);
     };
 
     const resetTours = async () => {
@@ -245,11 +282,7 @@ export default function Home() {
 
         await supabase.from("fahrten").delete().gt("datum", new Date(0).toISOString());
 
-        // noinspection ES6MissingAwait
-        loadTours();
-
-        // noinspection ES6MissingAwait
-        loadDriverQuotes();
+        await Promise.all([loadTours(user), loadDriverQuotes(user)]);
     };
 
     const handleScroll = () => {
@@ -334,6 +367,7 @@ export default function Home() {
                                 allQuotesIm={allQuotesIm}
                                 loading={loading}
                                 isAdmin={isAdmin}
+                                user={user}
                             />
                         )}
 
