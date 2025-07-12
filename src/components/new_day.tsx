@@ -5,6 +5,7 @@ import Tour from "@/interfaces/tour";
 import Driver from "@/interfaces/driver";
 import DriverSuggestion from "@/interfaces/driver_suggestion";
 import {supabase} from "@/lib/supabaseClient";
+import {User as SupabaseUser} from "@supabase/auth-js";
 
 type Props = {
     tours: Tour[],
@@ -17,12 +18,13 @@ type Props = {
     saveTour: (datum: Date, aktuelleAnwesenheit: Set<number>, aktuellerVorschlag: DriverSuggestion) => void,
     currentDate: Date,
     setCurrentDate: (value: (((prevState: Date) => Date) | Date)) => void,
-    loadTours: () => Promise<void>,
+    loadTours: (user: SupabaseUser) => Promise<void>,
     allQuotesSp: Map<any, any>,
     allQuotesIm: Map<any, any>,
     loading: boolean,
-    loadDriverQuotes?: () => Promise<void>,
-    isAdmin: boolean
+    loadDriverQuotes: (user: SupabaseUser) => Promise<void>,
+    isAdmin: boolean,
+    user: SupabaseUser
 };
 
 export default function NeuerTag({
@@ -40,7 +42,8 @@ export default function NeuerTag({
                                      allQuotesIm,
                                      loading,
                                      loadDriverQuotes,
-                                     isAdmin
+                                     isAdmin,
+                                     user
                                  }: Props) {
     const [currentDriverSuggestion, setCurrentDriverSuggestion] = useState<DriverSuggestion>({fahrerA_id: 0, fahrerB_id: 0});
     const [currentAttendance, setCurrentAttendance] = useState(new Set<number>());
@@ -50,7 +53,7 @@ export default function NeuerTag({
     useEffect(() => {
         const init = async () => {
             if (tours && tours.length) {
-                const letzteAnwesenheit = new Set(tours[tours.length-1].anwesend_ids);
+                const letzteAnwesenheit = new Set(tours[tours.length - 1].anwesend_ids);
 
                 setCurrentAttendance(new Set(letzteAnwesenheit));
 
@@ -62,14 +65,14 @@ export default function NeuerTag({
             }
         };
 
-        init();
+        init().then(() => console.debug('New Day component initialized. Is loading:', loading));
     }, [loading]);
 
     const simulate = async () => {
         const aktuelleAnwesenheit = new Set<number>(drivers.map(m => m.id));
         const aktuellerVorschlag = await berechneFahrerVorschlag(aktuelleAnwesenheit);
 
-        let datum = tours.map(d => d.datum).reduce((prev, curr, index, arr) => {
+        let datum = tours.map(d => d.datum).reduce((prev, curr) => {
             return prev > curr ? prev : curr
         }, new Date());
 
@@ -95,8 +98,7 @@ export default function NeuerTag({
         setTours([fahrt, ...tours]);
         setCurrentAttendance(aktuelleAnwesenheit);
 
-        loadTours();
-        loadDriverQuotes();
+        await Promise.all([loadTours(user), loadDriverQuotes(user)]);
 
         setTimeout(() => {
             tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
