@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import {useEffect, useState} from "react";
 import AdminLayout from "@/components/admin/layout";
 import InviteLink from "@/components/invite_link";
-import { withRoleAuth } from "@/lib/withRoleAuth";
+import {withRoleAuthSsr} from "@/lib/withRoleAuthSsr";
 
-export const getServerSideProps = withRoleAuth("admin");
+export const getServerSideProps = withRoleAuthSsr("admin");
 
 export default function InviteAdminPage() {
     const [email, setEmail] = useState("");
