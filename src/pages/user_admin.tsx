@@ -26,6 +26,17 @@ export default function UserAdminPage() {
         await fetchUsers();
     };
 
+    const handleDelete = async (id: string) => {
+        if (!confirm("Diesen Nutzer wirklich löschen?")) return;
+
+        await fetch("/api/users/delete", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({id: id})
+        });
+        await fetchUsers();
+    };
+
     return (
         <AdminLayout>
             <h3>Benutzerverwaltung</h3>
@@ -35,6 +46,7 @@ export default function UserAdminPage() {
                     <th>E-Mail</th>
                     <th>Rolle</th>
                     <th>Aktion</th>
+                    <th></th>
                 </tr>
                 </thead>
                 <tbody>
@@ -51,6 +63,11 @@ export default function UserAdminPage() {
                                 <option value="user">user</option>
                                 <option value="admin">admin</option>
                             </select>
+                        </td>
+                        <td>
+                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(user.id)}>
+                                Löschen
+                            </button>
                         </td>
                     </tr>
                 ))}
