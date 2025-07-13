@@ -36,7 +36,8 @@ export default function Home() {
     const [allQuotesSp, setAllQuotesSp] = useState(new Map<string, Map<number, number>>);
     const [allQuotesIm, setAllQuotesIm] = useState(new Map<number, Map<string, Map<number, number>>>);
 
-    const [loading, setLoading] = useState(true);
+    const [loadingOuotes, setLoadingOuotes] = useState(true);
+    const [loadingTours, setLoadingTours] = useState(true);
 
     useEffect(() => {
         supabase.auth.getSession().then(async ({data}) => {
@@ -107,6 +108,7 @@ export default function Home() {
     }
 
     async function loadTours(user: SupabaseUser) {
+        setLoadingTours(true);
         try {
             if (user) {
                 const res = await fetch("/api/tours/list", {
@@ -141,6 +143,7 @@ export default function Home() {
         } catch (error) {
             console.error("Netzwerkfehler:", error);
         }
+        setLoadingTours(false);
     }
 
     async function loadDriverQuotesSp(user: SupabaseUser): Promise<Map<number, number>[]> {
@@ -222,11 +225,11 @@ export default function Home() {
     const loadDriverQuotes = async (user: SupabaseUser) => {
         console.log("Initializing driver quotes...");
 
-        setLoading(true);
+        setLoadingOuotes(true);
 
         await Promise.all([loadDriverQuotesSp(user), loadDriverQuotesIm(user)]);
 
-        setLoading(false);
+        setLoadingOuotes(false);
 
         console.log("Initialized  driver quotes.");
     };
@@ -365,13 +368,14 @@ export default function Home() {
                                 loadDriverQuotes={loadDriverQuotes}
                                 allQuotesSp={allQuotesSp}
                                 allQuotesIm={allQuotesIm}
-                                loading={loading}
+                                loading={loadingOuotes}
                                 isAdmin={isAdmin}
                                 user={user}
                             />
                         )}
 
                         <Fahrtentabelle
+                            loading={loadingTours}
                             daten={tours}
                             fahrerListe={drivers}
                             driversSp={driversSp}

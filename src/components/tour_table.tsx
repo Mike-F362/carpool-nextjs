@@ -15,7 +15,8 @@ type Props = {
     handleScroll: () => void,
     visibleRows: number,
     driversSp: number[],
-    driversIm: number[]
+    driversIm: number[],
+    loading: boolean
 };
 
 export default function Fahrtentabelle({
@@ -27,7 +28,8 @@ export default function Fahrtentabelle({
                                            handleScroll,
                                            visibleRows,
                                            driversSp,
-                                           driversIm
+                                           driversIm,
+                                           loading
                                        }: Props) {
     const [activeRow, setActiveRow] = useState<number>();
     const [geöffneteZeilen, setGeöffneteZeilen] = useState<number[]>([]);
@@ -106,6 +108,16 @@ export default function Fahrtentabelle({
             if (!setB.has(val)) return false;
         }
         return true;
+    }
+
+    if (loading) {
+        return (
+            <div className="d-flex justify-content-center align-items-center p-4">
+                <div className="spinner-border" role="status">
+                    <span className="visually-hidden">Lädt...</span>
+                </div>
+            </div>
+        );
     }
 
     return (
