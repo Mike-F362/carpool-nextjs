@@ -37,9 +37,11 @@ export async function updateSession(request: NextRequest) {
         data: {user},
     } = await supabase.auth.getUser()
 
+    // TODO: allow first setup access to setup-admin
     if (
         !user &&
-        request.nextUrl.pathname.startsWith('/api')
+        request.nextUrl.pathname.startsWith('/api') &&
+        !request.nextUrl.pathname.endsWith('/register')
     ) {
         return new NextResponse(JSON.stringify({error: 'Unauthorized 401'}), {
             status: 401,
