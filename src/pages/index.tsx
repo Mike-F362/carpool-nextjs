@@ -193,7 +193,7 @@ export default function Home() {
                 });
 
                 if (!res.ok) {
-                    console.error("Fehler beim Abrufen der Fahrerquote");
+                    console.error("Fehler beim Abrufen der Fahrerquote für den Zwischenstopp");
                     return;
                 }
 
