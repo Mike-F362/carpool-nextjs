@@ -24,7 +24,8 @@ type Props = {
     loading: boolean,
     loadDriverQuotes: (user: SupabaseUser) => Promise<void>,
     isAdmin: boolean,
-    user: SupabaseUser
+    user: SupabaseUser,
+    lastTours: Map<any, any>
 };
 
 export default function NeuerTag({
@@ -43,7 +44,8 @@ export default function NeuerTag({
                                      loading,
                                      loadDriverQuotes,
                                      isAdmin,
-                                     user
+                                     user,
+                                     lastTours
                                  }: Props) {
     const [currentDriverSuggestion, setCurrentDriverSuggestion] = useState<DriverSuggestion>({fahrerA_id: 0, fahrerB_id: 0});
     const [currentAttendance, setCurrentAttendance] = useState(new Set<number>());
@@ -106,13 +108,19 @@ export default function NeuerTag({
 
     }
 
-    function nextDriver(anwesend2: number[], quoteZw: Map<number, number>) {
-        anwesend2.sort((a, b) => {
-            // TODO: bei Gleichstand: Datum letzte Fahrt vergleichen!
-            return ((quoteZw.get(a) | 0) - (quoteZw.get(b) | 0));
+    function nextDriver(anwesend: number[], quotes: Map<number, number>) {
+        anwesend.sort((a, b) => {
+            let res = (quotes.get(a) | 0) - (quotes.get(b) | 0);
+            if (!res) {
+                const lastTourA = lastTours.get(a) || 0;
+                const lastTourB = lastTours.get(b) || 0;
+
+                res = lastTourA - lastTourB;
+            }
+            return res;
         });
 
-        const fahrerB_id = anwesend2[0];
+        const fahrerB_id = anwesend[0];
         const fahrerB = drivers.find(fahrer => fahrer.id == fahrerB_id)
         const fahrerB_text = fahrerB?.label || "?";
         return {fahrer_id: fahrerB_id, fahrer_text: fahrerB_text};

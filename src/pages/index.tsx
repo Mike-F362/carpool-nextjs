@@ -35,6 +35,7 @@ export default function Home() {
 
     const [allQuotesSp, setAllQuotesSp] = useState(new Map<string, Map<number, number>>);
     const [allQuotesIm, setAllQuotesIm] = useState(new Map<number, Map<string, Map<number, number>>>);
+    const [lastTours, setLastTours] = useState(new Map<number, Date>);
 
     const [loadingOuotes, setLoadingOuotes] = useState(true);
     const [loadingTours, setLoadingTours] = useState(true);
@@ -222,12 +223,43 @@ export default function Home() {
         }
     }
 
+    async function loadLastTours(user: SupabaseUser): Promise<Map<number, number>[]> {
+        try {
+            if (user) {
+                const res = await fetch("/api/fahrer/last_tour", {
+                    method: "POST",
+                    credentials: "include",
+                    headers: {"Content-Type": "application/json"},
+                });
+
+                if (!res.ok) {
+                    console.error("Fehler beim Abrufen der letzten Fahrten");
+                    return;
+                }
+
+                const data: [{ driver_id: number, last_tour: Date }] = await res.json();
+
+                const lastTours = new Map(data.map(tour => {
+                    return [tour.driver_id, new Date(tour.last_tour)];
+                }));
+
+                console.debug("lastTours:", lastTours);
+
+                setLastTours(lastTours);
+            } else {
+                setLastTours(new Map<number, Date>());
+            }
+        } catch (error) {
+            console.error("Netzwerkfehler:", error);
+        }
+    }
+
     const loadDriverQuotes = async (user: SupabaseUser) => {
         console.log("Initializing driver quotes...");
 
         setLoadingOuotes(true);
 
-        await Promise.all([loadDriverQuotesSp(user), loadDriverQuotesIm(user)]);
+        await Promise.all([loadDriverQuotesSp(user), loadDriverQuotesIm(user), loadLastTours(user)]);
 
         setLoadingOuotes(false);
 
@@ -368,6 +400,7 @@ export default function Home() {
                                 loadDriverQuotes={loadDriverQuotes}
                                 allQuotesSp={allQuotesSp}
                                 allQuotesIm={allQuotesIm}
+                                lastTours={lastTours}
                                 loading={loadingOuotes}
                                 isAdmin={isAdmin}
                                 user={user}
