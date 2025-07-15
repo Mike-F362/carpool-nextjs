@@ -134,7 +134,7 @@ export default function NeuerTag({
 
         let quotesSpKey = '';
         if (anwesendSp.length > 1) {
-            quotesSpKey = Array.from(anwesendSp).sort().join('-');
+            quotesSpKey = Array.from(anwesendSp).sort((a, b) => a - b).join('-');
         }
 
         const quoteSp = allQuotesSp.get(quotesSpKey) || new Map();
@@ -152,7 +152,7 @@ export default function NeuerTag({
 
         // const quoteZw = await ladeFahrerQuoteZw(fahrerA_id, anwesendZw);
         const driverQuotesZw = allQuotesIm.get(fahrerA_id) || new Map();
-        const quotesZwKey = Array.from(anwesendZw).sort().join('-');
+        const quotesZwKey = Array.from(anwesendZw).sort((a, b) => a - b).join('-');
         const quoteZw = driverQuotesZw.get(quotesZwKey) || new Map();
         setQuotesZw(quoteZw);
 
