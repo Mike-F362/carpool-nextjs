@@ -145,7 +145,23 @@ export default function NeuerTag({
             quotesSpKey = Array.from(anwesendSp).sort((a, b) => a - b).join('-');
         }
 
-        const quoteSp = allQuotesSp.get(quotesSpKey) || new Map();
+        let quoteSp = allQuotesSp.get(quotesSpKey) || new Map();
+        if (!quoteSp.size) {
+            // check partial combinations match: f. ex. one tour was 4,5,11 - 11 was driver, new tour 4,11 -> 4 is driver
+            const partialMatchingQuotes = Array.from(allQuotesSp.keys().filter(key => {
+                const ids: [string] = key.split('-');
+                return anwesendSp.every(id => ids.includes(id.toString()));
+            }));
+
+            if (partialMatchingQuotes.length > 1) {
+                // todo: handle multiple partialMatchingQuotes (possible for drivers > 3)
+                console.warn('Found more than one partial quotes match', partialMatchingQuotes)
+            }
+
+            const partialQuoteSpKey = partialMatchingQuotes.pop();
+
+            quoteSp = allQuotesSp.get(partialQuoteSpKey) || new Map();
+        }
         setQuotesSp(quoteSp);
 
         const {fahrer_id: fahrerA_id, fahrer_text: fahrerA_text} = nextDriver(anwesendSp, quoteSp);
@@ -161,7 +177,9 @@ export default function NeuerTag({
         // const quoteZw = await ladeFahrerQuoteZw(fahrerA_id, anwesendZw);
         const driverQuotesZw = allQuotesIm.get(fahrerA_id) || new Map();
         const quotesZwKey = Array.from(anwesendZw).sort((a, b) => a - b).join('-');
-        const quoteZw = driverQuotesZw.get(quotesZwKey) || new Map();
+        let quoteZw = driverQuotesZw.get(quotesZwKey) || new Map();
+
+        // TODO test partial combinations if quoteZw.size == 0
         setQuotesZw(quoteZw);
 
         anwesendZw.push(fahrerA_id);
