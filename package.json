@@ -1,6 +1,6 @@
 {
   "name": "fahrtverteilung-bootstrap",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "scripts": {
     "dev": "next dev",
     "build": "node scripts/postbuild.js && next build",

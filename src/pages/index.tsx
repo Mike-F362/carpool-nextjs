@@ -307,7 +307,7 @@ export default function Home() {
     const removeTour = async (id: number) => {
         if (!confirm("Diese Tour wirklich löschen?")) return;
         await supabase.from("fahrten").delete().eq("id", id);
-        await loadTours(user);
+        await Promise.all([loadTours(user), loadDriverQuotes(user)]);
     };
 
     const resetTours = async () => {
