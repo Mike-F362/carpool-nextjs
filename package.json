@@ -5,19 +5,20 @@
     "dev": "next dev",
     "build": "node scripts/postbuild.js && next build",
     "start": "next start",
-    "test": "node --experimental-strip-types --test tests/",
-    "test:watch": "node --experimental-strip-types --test --watch tests/",
+    "test": "node --experimental-strip-types --test tests/unit.test.ts tests/property.test.ts tests/golden.test.ts",
+    "test:watch": "node --experimental-strip-types --test --watch tests/unit.test.ts tests/property.test.ts tests/golden.test.ts",
+    "test:schema": "node --experimental-strip-types --test tests/schema.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.0.0",
     "bootstrap": "^5.3.7",
-    "next": "15.3.4",
+    "next": "15.5.23",
     "nookies": "^2.5.2",
-    "react": "19.1.0",
+    "react": "19.1.9",
     "react-bootstrap": "^2.10.10",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.9"
   },
   "devDependencies": {
     "@types/react": "19.1.8",
