@@ -3,7 +3,7 @@ import {calcQuoteZw, get_drivers} from "@/pages/api/fahrer/calc_qoutes";
 import {createApiClient} from "@/lib/supabase/api";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-    // Sitzungsgebundener Client: laeuft als `authenticated`, nicht als `anon`
+    // Session-bound client: runs as `authenticated`, not as `anon`
     const supabase = createApiClient(req);
     const spIds = await get_drivers(supabase, 1);
 

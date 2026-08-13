@@ -11,15 +11,15 @@ export function withAdminAuth(handler: NextApiHandler): NextApiHandler {
             return res.status(401).json({error: 'Unauthorized'})
         }
 
-        // Die Rolle liegt in app_metadata. user_metadata waere hier wertlos:
-        // es ist per auth.updateUser() vom Client selbst beschreibbar, jeder
-        // Nutzer koennte sich damit zum Admin machen. app_metadata laesst sich
-        // ausschliesslich mit dem Service-Role-Key aendern.
+        // The role lives in app_metadata. user_metadata would be worthless
+        // here: clients can write it through auth.updateUser(), so any user
+        // could make themselves an admin. app_metadata can only be changed
+        // with the service role key.
         if (user.app_metadata?.role !== 'admin') {
             return res.status(403).json({error: 'Admin only'})
         }
 
-        // Admin validiert, reiche den Aufruf an handler weiter
+        // Admin verified, pass the call on to the handler
         return handler(req, res)
     }
 }

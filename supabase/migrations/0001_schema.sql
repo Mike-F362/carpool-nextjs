@@ -1,5 +1,5 @@
--- Basisschema (Struktur). Policies und Rechte stehen in 0002_security.sql.
--- Ohne 0002 ist keine Rolle ausser service_role zugriffsberechtigt.
+-- Base schema (structure only). Policies and privileges live in
+-- 0002_security.sql. Without 0002 no role except service_role has access.
 
 
 SET statement_timeout = 0;

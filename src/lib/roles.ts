@@ -1,6 +1,6 @@
 /**
- * Zulaessige Rollen. Die Rolle wird ausschliesslich in `app_metadata`
- * gefuehrt - dort kann sie nur mit dem Service-Role-Key gesetzt werden.
+ * Known roles. The role is kept in `app_metadata` only, where it can be
+ * written with the service role key alone.
  */
 export const ROLES = ['user', 'admin'] as const;
 

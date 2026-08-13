@@ -18,8 +18,8 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
         return res.status(400).json({error: `Unbekannte Rolle: ${role}`});
     }
 
-    // app_metadata statt user_metadata: nur der Service-Role-Key darf hier
-    // schreiben. user_metadata koennte der Nutzer selbst setzen.
+    // app_metadata rather than user_metadata: only the service role key can
+    // write here, whereas user_metadata is client-writable.
     const {error} = await supabaseAdmin.auth.admin.updateUserById(id, {
         app_metadata: {role}
     });
