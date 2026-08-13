@@ -46,7 +46,7 @@ export default function Home() {
             supabase.auth.getUser().then(value => {
                 const usr = value.data?.user;
                 setUser(usr);
-                setIsAdmin(usr?.user_metadata?.role === "admin");
+                setIsAdmin(usr?.app_metadata?.role === "admin");
             });
         });
         const {
@@ -56,7 +56,7 @@ export default function Home() {
             supabase.auth.getUser().then(value => {
                 const usr = value.data?.user;
                 setUser(usr);
-                setIsAdmin(usr?.user_metadata?.role === "admin");
+                setIsAdmin(usr?.app_metadata?.role === "admin");
 
                 loadDriverQuotes(usr);
                 loadTours(usr);
