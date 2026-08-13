@@ -11,6 +11,10 @@
     "strict": false,
     "noEmit": true,
     "incremental": true,
+    // The test files import with an explicit .ts extension because
+    // `node --experimental-strip-types` resolves nothing else. Allowed only
+    // together with noEmit, which is set above.
+    "allowImportingTsExtensions": true,
     "module": "esnext",
     "esModuleInterop": true,
     "moduleResolution": "node",
