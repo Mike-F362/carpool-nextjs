@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [master, development]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+
+      # npm ci statt npm install: baut exakt gegen package-lock.json
+      - run: npm ci
+
+      - name: Verhaltenstests (Algorithmus, Invarianten, echte Historie)
+        run: node --experimental-strip-types --test tests/unit.test.ts tests/property.test.ts tests/golden.test.ts
+
+      # Diese Suite dokumentiert offene Befunde in Schema und Konfiguration.
+      # Sie darf den Build zunaechst nicht blockieren - sobald die Punkte
+      # abgearbeitet sind, continue-on-error entfernen.
+      - name: Schema- und Sicherheitspruefung
+        continue-on-error: true
+        run: node --experimental-strip-types --test tests/schema.test.ts
+
+      - name: Typen
+        run: npx tsc --noEmit
