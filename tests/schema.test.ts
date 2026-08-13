@@ -14,6 +14,7 @@ import {test, describe} from 'node:test';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
+import {execFileSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
 const ROOT = path.join(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -138,9 +139,19 @@ describe('Secrets und Konfiguration', () => {
     });
 
     test('keine Zugangsdaten im Repository', () => {
-        for (const f of ['db_password', '.env.local', '.env']) {
-            assert.ok(!fs.existsSync(path.join(ROOT, f)), `${f} liegt im Projektverzeichnis`);
+        // Geprueft wird, was Git kennt - nicht, was auf der Platte liegt.
+        // .env.local gehoert auf jede Entwicklermaschine; entscheidend ist,
+        // dass die Datei nicht eingecheckt ist.
+        const kandidaten = ['db_password', '.env.local', '.env', '.env.local.override'];
+        let verfolgt: string;
+        try {
+            verfolgt = execFileSync('git', ['ls-files', '--', ...kandidaten],
+                {cwd: ROOT, encoding: 'utf8'}).trim();
+        } catch {
+            return; // kein Git verfuegbar (Tarball, Container) - nichts zu pruefen
         }
+        assert.equal(verfolgt, '',
+            'Zugangsdaten sind eingecheckt: ' + verfolgt.split('\n').join(', '));
     });
 });
 
