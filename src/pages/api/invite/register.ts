@@ -3,9 +3,8 @@ import {supabaseAdmin} from "@/lib/supabaseClientAdmin";
 import {normalizeRole} from "@/lib/roles";
 
 /**
- * Einloesen eines Einladungscodes. Oeffentlich erreichbar (die Middleware
- * laesst /register ohne Sitzung durch) - deshalb muss der Code hier
- * vollstaendig geprueft werden.
+ * Redeems an invite code. Reachable without a session (the middleware lets
+ * /register through), so the code has to be validated in full right here.
  */
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     if (req.method !== "POST") return res.status(405).json({error: "Nur POST erlaubt"});
@@ -16,18 +15,18 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         return res.status(400).json({error: "Ungueltige Felder"});
     }
 
-    const jetzt = new Date().toISOString();
+    const now = new Date().toISOString();
 
-    // Code in einem einzigen Schritt entwerten und dabei pruefen: nur ein
-    // ungenutzter, nicht abgelaufener Code wird zurueckgegeben. Zwei parallele
-    // Anfragen mit demselben Code koennen so nicht beide durchkommen -
-    // eine Pruefung vor dem Update haette genau dieses Rennen offen gelassen.
+    // Invalidate and validate in a single step: only an unused, unexpired code
+    // comes back. Two concurrent requests carrying the same code cannot both
+    // get through - checking before updating would have left exactly that race
+    // open.
     const {data: invite, error: claimError} = await supabaseAdmin
         .from("invites")
         .update({used: true, used_by: email})
         .eq("code", code)
         .eq("used", false)
-        .or(`expires_at.is.null,expires_at.gt.${jetzt}`)
+        .or(`expires_at.is.null,expires_at.gt.${now}`)
         .select()
         .maybeSingle();
 
@@ -36,15 +35,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     if (!invite) {
-        // Bewusst eine einzige Meldung fuer "unbekannt", "schon benutzt" und
-        // "abgelaufen": sonst liesse sich damit die Gueltigkeit fremder Codes
-        // abfragen.
+        // One message for "unknown", "already used" and "expired" on purpose:
+        // separate ones would turn this endpoint into an oracle for the
+        // validity of other people's codes.
         return res.status(400).json({error: "Ungueltiger oder abgelaufener Einladungscode"});
     }
 
-    // Einladung auf eine feste Adresse: nur diese darf sie einloesen.
+    // Invite addressed to a fixed account: only that address may redeem it.
     if (invite.email && invite.email.toLowerCase() !== email.toLowerCase()) {
-        await freigeben(code);
+        await release(code);
         return res.status(400).json({error: "Ungueltiger oder abgelaufener Einladungscode"});
     }
 
@@ -52,23 +51,23 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         email,
         password,
         email_confirm: true,
-        // Rolle in app_metadata (nur mit Service-Role-Key schreibbar) und nur
-        // aus der bekannten Liste - ein manipulierter invites-Datensatz kann so
-        // keine beliebige Rolle vergeben.
+        // Role in app_metadata (writable with the service role key only) and
+        // taken from the known list, so a tampered invites row cannot hand out
+        // an arbitrary role.
         app_metadata: {role: normalizeRole(invite.role)},
     });
 
     if (createError) {
-        // Anlegen fehlgeschlagen: Code wieder freigeben, sonst ist die
-        // Einladung verbraucht, ohne dass ein Konto entstanden ist.
-        await freigeben(code);
+        // Creating the account failed: release the code again, otherwise the
+        // invite is spent without an account to show for it.
+        await release(code);
         return res.status(500).json({error: createError.message});
     }
 
     return res.status(200).json({success: true});
 }
 
-async function freigeben(code: string) {
+async function release(code: string) {
     await supabaseAdmin
         .from("invites")
         .update({used: false, used_by: null})

@@ -2,7 +2,7 @@ import {NextApiRequest, NextApiResponse} from "next";
 import {createApiClient} from "@/lib/supabase/api";
 
 export default async function handler(_req: NextApiRequest, res: NextApiResponse) {
-    // Sitzungsgebundener Client: laeuft als `authenticated`, nicht als `anon`
+    // Session-bound client: runs as `authenticated`, not as `anon`
     const supabase = createApiClient(_req);
 
     const {data, error} = await supabase.rpc("get_last_tour_per_driver");

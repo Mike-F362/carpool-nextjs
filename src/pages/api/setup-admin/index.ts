@@ -25,7 +25,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         email,
         password,
         email_confirm: true,
-        // app_metadata: nur mit Service-Role-Key schreibbar
+        // app_metadata: writable with the service role key only
         app_metadata: {role: "admin"}
     });
 

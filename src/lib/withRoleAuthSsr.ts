@@ -31,8 +31,8 @@ export function withRoleAuthSsr(requiredRole: string, inner: GetServerSideProps 
             }
         }
 
-        // Rolle aus app_metadata: nur per Service-Role-Key schreibbar.
-        // user_metadata kann der Client selbst setzen.
+        // Role from app_metadata: writable with the service role key only.
+        // user_metadata is something the client can set itself.
         if (user.app_metadata?.role !== requiredRole) {
             return {
                 redirect: {

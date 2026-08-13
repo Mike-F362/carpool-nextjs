@@ -2,16 +2,16 @@ import {createServerClient} from '@supabase/ssr'
 import type {NextApiRequest} from 'next'
 
 /**
- * Supabase-Client fuer API-Routen (Pages Router), gebunden an die Sitzung des
- * Aufrufers.
+ * Supabase client for API routes (Pages Router), bound to the caller's
+ * session.
  *
- * Wichtig: Der Modul-Client aus `@/lib/supabaseClient` traegt serverseitig
- * keine Sitzung und laeuft daher als Rolle `anon`. Solange RLS nur noch
- * `authenticated` erlaubt, muessen API-Routen den Cookie des Aufrufers
- * durchreichen - sonst liefert jede Abfrage leere Ergebnisse.
+ * The module client from `@/lib/supabaseClient` carries no session on the
+ * server and therefore acts as role `anon`. With RLS limited to
+ * `authenticated`, API routes have to pass the caller's cookie along or every
+ * query comes back empty.
  *
- * Cookies werden nur gelesen. Das Auffrischen der Sitzung uebernimmt die
- * Middleware (`src/lib/middleware/checkAuth.ts`).
+ * Cookies are read only. Refreshing the session is the middleware's job, see
+ * `src/lib/middleware/checkAuth.ts`.
  */
 export function createApiClient(req: NextApiRequest) {
     return createServerClient(
@@ -25,7 +25,7 @@ export function createApiClient(req: NextApiRequest) {
                         .map(([name, value]) => ({name, value: value as string}))
                 },
                 setAll() {
-                    // bewusst leer: siehe Kommentar oben
+                    // intentionally empty, see comment above
                 },
             },
         }

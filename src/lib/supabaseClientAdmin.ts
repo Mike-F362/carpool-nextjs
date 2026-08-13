@@ -1,20 +1,20 @@
 import {createClient} from "@supabase/supabase-js";
 
 /**
- * Client mit Service-Role-Key. Umgeht RLS vollstaendig - darf niemals in ein
- * Client-Bundle geraten.
+ * Client using the service role key. Bypasses RLS entirely and must never end
+ * up in a client bundle.
  *
- * Die Variable heisst bewusst NICHT NEXT_PUBLIC_*: dieses Praefix laesst
- * Next.js den Wert im Klartext in jedes Bundle inlinen, das die Variable
- * referenziert. Ohne das Praefix ist sie nur im Node-Prozess sichtbar.
+ * The variable deliberately carries no NEXT_PUBLIC_ prefix: that prefix makes
+ * Next.js inline the value in plain text into every bundle referencing it.
+ * Without it, the value stays inside the Node process.
  *
- * Der Guard darunter ersetzt `import 'server-only'` (das erst als Abhaengigkeit
- * installiert werden muesste) und schlaegt beim ersten Import im Browser zu.
+ * The guard below stands in for `import 'server-only'`, which would first have
+ * to be added as a dependency, and trips on the first import in a browser.
  */
 if (typeof window !== "undefined") {
     throw new Error(
-        "supabaseClientAdmin darf nur serverseitig importiert werden " +
-        "(API-Route, getServerSideProps)."
+        "supabaseClientAdmin must only be imported on the server " +
+        "(API route, getServerSideProps)."
     );
 }
 
@@ -22,7 +22,7 @@ const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
 if (!serviceRoleKey) {
     throw new Error(
-        "SUPABASE_SERVICE_ROLE_KEY ist nicht gesetzt. Siehe .env.example.local."
+        "SUPABASE_SERVICE_ROLE_KEY is not set. See .env.example.local."
     );
 }
 
@@ -31,8 +31,8 @@ export const supabaseAdmin = createClient(
     serviceRoleKey,
     {
         auth: {
-            // Ein Serverprozess hat keine Nutzersitzung, die persistiert werden
-            // muesste. persistSession: true wuerde Tokens prozessweit teilen.
+            // A server process has no user session worth persisting, and
+            // persistSession: true would share tokens across the process.
             persistSession: false,
             autoRefreshToken: false,
         },
