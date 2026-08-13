@@ -1,8 +1,10 @@
 import {NextApiRequest, NextApiResponse} from "next";
 import {calcQuoteSp, get_drivers} from "@/pages/api/fahrer/calc_qoutes";
-import {supabase} from "@/lib/supabaseClient";
+import {createApiClient} from "@/lib/supabase/api";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+    // Sitzungsgebundener Client: laeuft als `authenticated`, nicht als `anon`
+    const supabase = createApiClient(req);
     const zwischenIds = await get_drivers(supabase, 2);
 
     const {data, error} = await supabase.rpc("get_unique_attendance_ids");

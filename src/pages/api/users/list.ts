@@ -15,7 +15,7 @@ async function handler(_req: NextApiRequest, res: NextApiResponse) {
     const users = data.users.map((u: SupabaseUser): User => ({
         id: u.id,
         email: u.email,
-        role: u.user_metadata?.role || 'user'
+        role: u.app_metadata?.role || 'user'
     }));
 
     res.status(200).json(users);

@@ -1,22 +1,9 @@
-import {createServerClient} from '@supabase/ssr'
 import type {NextApiHandler, NextApiRequest, NextApiResponse} from 'next'
+import {createApiClient} from '@/lib/supabase/api'
 
 export function withAdminAuth(handler: NextApiHandler): NextApiHandler {
     return async (req: NextApiRequest, res: NextApiResponse) => {
-        const supabase = createServerClient(
-            process.env.NEXT_PUBLIC_SUPABASE_URL!,
-            process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-            {
-                cookies: {
-                    getAll() {
-                        return Object.entries(req.cookies).map(([name, value]) => ({name, value}))
-                    },
-                    setAll() {
-                        // optional: setzen wir hier nicht
-                    },
-                },
-            }
-        )
+        const supabase = createApiClient(req)
 
         const {data: {user}, error} = await supabase.auth.getUser()
 
@@ -24,7 +11,11 @@ export function withAdminAuth(handler: NextApiHandler): NextApiHandler {
             return res.status(401).json({error: 'Unauthorized'})
         }
 
-        if (user.user_metadata?.role !== 'admin') {
+        // Die Rolle liegt in app_metadata. user_metadata waere hier wertlos:
+        // es ist per auth.updateUser() vom Client selbst beschreibbar, jeder
+        // Nutzer koennte sich damit zum Admin machen. app_metadata laesst sich
+        // ausschliesslich mit dem Service-Role-Key aendern.
+        if (user.app_metadata?.role !== 'admin') {
             return res.status(403).json({error: 'Admin only'})
         }
 
