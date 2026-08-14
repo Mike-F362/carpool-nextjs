@@ -20,14 +20,13 @@ jobs:
       - run: npm ci
 
       - name: Verhaltenstests (Algorithmus, Invarianten, echte Historie)
-        run: node --experimental-strip-types --test tests/unit.test.ts tests/property.test.ts tests/golden.test.ts
+        run: npm test
 
-      # Diese Suite dokumentiert offene Befunde in Schema und Konfiguration.
-      # Sie darf den Build zunaechst nicht blockieren - sobald die Punkte
-      # abgearbeitet sind, continue-on-error entfernen.
+      # Diese Suite lief zunaechst mit continue-on-error, weil sie offene
+      # Befunde in Schema und Konfiguration dokumentierte. Seit alle Punkte
+      # abgearbeitet sind, blockiert sie den Build wie jede andere Suite.
       - name: Schema- und Sicherheitspruefung
-        continue-on-error: true
-        run: node --experimental-strip-types --test tests/schema.test.ts
+        run: npm run test:schema
 
       - name: Typen
         run: npx tsc --noEmit

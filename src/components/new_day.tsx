@@ -148,10 +148,12 @@ export default function NeuerTag({
         let quoteSp = allQuotesSp.get(quotesSpKey) || new Map();
         if (!quoteSp.size) {
             // check partial combinations match: f. ex. one tour was 4,5,11 - 11 was driver, new tour 4,11 -> 4 is driver
-            const partialMatchingQuotes = Array.from(allQuotesSp.keys().filter(key => {
+            // Erst Array.from, dann filtern: Iterator-Helfer wie
+            // keys().filter() gibt es erst ab Chrome 122 / Safari 18.4.
+            const partialMatchingQuotes = Array.from(allQuotesSp.keys()).filter(key => {
                 const ids: [string] = key.split('-');
                 return anwesendSp.every(id => ids.includes(id.toString()));
-            }));
+            });
 
             if (partialMatchingQuotes.length > 1) {
                 // todo: handle multiple partialMatchingQuotes (possible for drivers > 3)
@@ -238,9 +240,15 @@ export default function NeuerTag({
     }
 
     function isNextDriverIm(driver: Driver) {
-        const nurZw = new Set(driversIm).difference(new Set(driversSp));
+        // Set.difference / Set.intersection gibt es erst ab Chrome 122 /
+        // Safari 17.4 / Firefox 127 - auf aelteren Geraeten wirft das einen
+        // TypeError. Gleiche Semantik, nur von Hand.
+        const spIds = new Set(driversSp);
+        const nurZw = driversIm.filter(id => !spIds.has(id));
 
-        return (!!currentAttendance.intersection(nurZw).size) && currentDriverSuggestion.fahrerB_id === driver.id;
+        const trifftZu = nurZw.some(id => currentAttendance.has(id));
+
+        return trifftZu && currentDriverSuggestion.fahrerB_id === driver.id;
     }
 
     if (loading) {

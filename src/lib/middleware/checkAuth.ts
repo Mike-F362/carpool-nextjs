@@ -1,6 +1,32 @@
 import {createServerClient} from '@supabase/ssr'
 import {type NextRequest, NextResponse} from 'next/server'
 
+/**
+ * API-Routen, die ohne Sitzung erreichbar sein muessen. Beide pruefen die
+ * Berechtigung im Handler selbst:
+ *
+ *   /api/invite/register  entwertet den Einladungscode atomar und prueft dabei
+ *                         `used` und `expires_at`.
+ *   /api/setup-admin      legt den ersten Admin an und verweigert den Dienst,
+ *                         sobald irgendein Benutzer existiert. Ohne diese
+ *                         Ausnahme waere /setup auf einer frischen Installation
+ *                         nicht erreichbar - genau dann gibt es ja noch keine
+ *                         Sitzung.
+ *
+ * Exakter Pfadvergleich (oder Praefix mit '/'), damit die Liste nicht
+ * versehentlich fremde Routen mit gleicher Endung freigibt.
+ */
+const OEFFENTLICHE_API_ROUTEN = [
+    '/api/invite/register',
+    '/api/setup-admin',
+] as const;
+
+function istOeffentlicheApiRoute(pathname: string): boolean {
+    return OEFFENTLICHE_API_ROUTEN.some(
+        route => pathname === route || pathname.startsWith(`${route}/`)
+    );
+}
+
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
         request,
@@ -37,11 +63,10 @@ export async function updateSession(request: NextRequest) {
         data: {user},
     } = await supabase.auth.getUser()
 
-    // TODO: allow first setup access to setup-admin
     if (
         !user &&
         request.nextUrl.pathname.startsWith('/api') &&
-        !request.nextUrl.pathname.endsWith('/register')
+        !istOeffentlicheApiRoute(request.nextUrl.pathname)
     ) {
         return new NextResponse(JSON.stringify({error: 'Unauthorized 401'}), {
             status: 401,
