@@ -23,6 +23,11 @@ changelog while it was still a single-group prototype.
   app stays online-only by design, it merely fails more gracefully.
 - `npm run test:schema` as a script of its own, so the schema and security suite
   can be run without the behaviour tests.
+- Backup script (`scripts/dump_db.sh`, `scripts/dump_db.cmd`) writing roles,
+  schema and data as three files — the only order in which they restore. It runs
+  pg_dump through the Supabase CLI in a container matching the server version and
+  needs `SUPABASE_DB_URL` pointing at the session pooler on port 5432; the
+  transaction pooler on 6543 cannot serve pg_dump.
 
 ### Fixed
 
@@ -46,6 +51,11 @@ changelog while it was still a single-group prototype.
   suite.
 - CI calls `npm test` and `npm run test:schema` instead of repeating the file
   lists.
+- Line endings are normalised per file type (`.gitattributes`). A batch file
+  checked out with LF breaks, because cmd.exe locates `GOTO` targets by byte
+  offset; the fixture CSVs are pinned to LF, because the readers in the golden
+  tests split on `"\n"` and a stray CR would land in the last field of every row.
+  The fixtures are renormalised along with the rule.
 
 ## [1.1.0] - 2026-08-13
 
