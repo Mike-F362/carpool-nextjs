@@ -86,7 +86,12 @@ export default function FahrerAdminPage() {
             </div>
             <div className="mb-3 row g-2 align-items-lg-end">
                 <div className="col">
-                    <button className="btn btn-primary pull-right" onClick={handleCreate} disabled={!name || !label}>
+                    <button
+                        type="button"
+                        className="btn btn-primary pull-right"
+                        onClick={handleCreate}
+                        disabled={!name || !label}
+                    >
                         Hinzufügen
                     </button>
                 </div>
@@ -129,7 +134,11 @@ export default function FahrerAdminPage() {
                                 </select>
                             </td>
                             <td>
-                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(f.id)}>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(f.id)}
+                                >
                                     Löschen
                                 </button>
                             </td>

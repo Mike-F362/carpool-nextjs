@@ -356,7 +356,7 @@ export default function Home() {
                         <Header user={user} isAdmin={isAdmin} reset={resetTours} />
                     </>
                 ) : (
-                    <button className="btn btn-sm btn-outline-primary" onClick={() => setShowModal(true)}>
+                    <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => setShowModal(true)}>
                         Anmelden
                     </button>
                 )}
@@ -370,6 +370,7 @@ export default function Home() {
 
                     <div className="d-flex gap-2 mb-3">
                         <button
+                            type="button"
                             className="btn btn-primary mb-3"
                             onClick={newDayActive ? () => setNewDayActive(false) : newTour}
                         >

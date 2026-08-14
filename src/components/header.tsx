@@ -37,7 +37,11 @@ export default function Header({
             >
                 <div className="d-flex align-items-center gap-2">
                     {isAdmin && (
-                        <button className="btn btn-outline-secondary" onClick={() => setOffcanvasOpen(true)}>
+                        <button
+                            type="button"
+                            className="btn btn-outline-secondary"
+                            onClick={() => setOffcanvasOpen(true)}
+                        >
                             ☰
                         </button>
                     )}
@@ -46,6 +50,7 @@ export default function Header({
                 <div className="d-flex align-items-center ms-auto">
                     {user?.email && <span className="me-2 text-black opacity-75 small">{user.email}</span>}
                     <button
+                        type="button"
                         title="Logout"
                         className="btn btn-sm btn-outline-secondary"
                         onClick={() => supabase.auth.signOut()}
@@ -64,7 +69,7 @@ export default function Header({
                 >
                     <div className="offcanvas-header">
                         <h5 className="offcanvas-title">Admin-Menü</h5>
-                        <button className="btn-close" onClick={() => setOffcanvasOpen(false)}></button>
+                        <button type="button" className="btn-close" onClick={() => setOffcanvasOpen(false)}></button>
                     </div>
                     <div className="offcanvas-body">
                         <ul className="list-group list-group-flush">

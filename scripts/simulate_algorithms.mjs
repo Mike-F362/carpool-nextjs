@@ -288,7 +288,9 @@ const table = (rows) => {
     if (AS_MD) {
         p(`| ${rows[0].join(" | ")} |`);
         p(`|${rows[0].map(() => "---").join("|")}|`);
-        rows.slice(1).forEach((r) => p(`| ${r.join(" | ")} |`));
+        rows.slice(1).forEach((r) => {
+            p(`| ${r.join(" | ")} |`);
+        });
     } else {
         const w = rows[0].map((_, i) => Math.max(...rows.map((r) => String(r[i]).length)));
         rows.forEach((r, i) => {
@@ -389,9 +391,9 @@ if (warns.fallback) {
 if (!argv.includes("--no-detail")) {
     h(2, "Fahrtenfolge");
     const rows = [["Datum", "Anwesend", ...results.flatMap((r) => [r.name + " A", r.name + " B"])]];
-    SCHEDULE.forEach((d, i) =>
-        rows.push([d.date, d.present.map(lbl).join(","), ...results.flatMap((r) => r.history[i].drivers.map(lbl))]),
-    );
+    SCHEDULE.forEach((d, i) => {
+        rows.push([d.date, d.present.map(lbl).join(","), ...results.flatMap((r) => r.history[i].drivers.map(lbl))]);
+    });
     table(rows);
 }
 

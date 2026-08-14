@@ -126,7 +126,7 @@ export default function NeuerTag({
         });
 
         const fahrerB_id = anwesend[0];
-        const fahrerB = drivers.find((fahrer) => fahrer.id == fahrerB_id);
+        const fahrerB = drivers.find((fahrer) => Number(fahrer.id) === Number(fahrerB_id));
         const fahrerB_text = fahrerB?.label || "?";
         return { fahrer_id: fahrerB_id, fahrer_text: fahrerB_text };
     }
@@ -282,11 +282,11 @@ export default function NeuerTag({
         <div className="card p-3 mb-3">
             <div className="d-flex justify-content-between align-items-center mb-3">
                 {isAdmin && (
-                    <button className="btn btn-info mb-3" onClick={simulate}>
+                    <button type="button" className="btn btn-info mb-3" onClick={simulate}>
                         Simulation
                     </button>
                 )}
-                <button className="btn btn-outline-secondary btn-sm" onClick={resetForm}>
+                <button type="button" className="btn btn-outline-secondary btn-sm" onClick={resetForm}>
                     ♻️ Zurücksetzen
                 </button>
             </div>
@@ -395,6 +395,7 @@ export default function NeuerTag({
                 </div>
             </div>
             <button
+                type="button"
                 className="btn btn-success mt-2"
                 disabled={currentAttendance.size <= 1}
                 onClick={() => saveTour(currentDate, currentAttendance, currentDriverSuggestion)}

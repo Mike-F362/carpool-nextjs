@@ -65,7 +65,11 @@ export default function UserAdminPage() {
                                 </select>
                             </td>
                             <td>
-                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(user.id)}>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(user.id)}
+                                >
                                     Löschen
                                 </button>
                             </td>

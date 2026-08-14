@@ -49,8 +49,11 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                     </div>
                     <div className="modal-body">
                         <div className="mb-3">
-                            <label className="form-label">E-Mail-Adresse</label>
+                            <label className="form-label" htmlFor="auth-email">
+                                E-Mail-Adresse
+                            </label>
                             <input
+                                id="auth-email"
                                 type="email"
                                 className="form-control"
                                 value={email}
@@ -59,8 +62,11 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                             />
                         </div>
                         <div className="mb-2">
-                            <label className="form-label">Passwort</label>
+                            <label className="form-label" htmlFor="auth-password">
+                                Passwort
+                            </label>
                             <input
+                                id="auth-password"
                                 type="password"
                                 className="form-control"
                                 value={pw}

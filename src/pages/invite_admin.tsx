@@ -84,7 +84,11 @@ export default function InviteAdminPage() {
                             <td>{i.role}</td>
                             <InviteLink key={i.code} token={i.code} email={i.email} />
                             <td>
-                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(i.code)}>
+                                <button
+                                    type="button"
+                                    className="btn btn-sm btn-outline-danger"
+                                    onClick={() => handleDelete(i.code)}
+                                >
                                     Löschen
                                 </button>
                             </td>

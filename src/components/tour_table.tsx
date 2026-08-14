@@ -149,6 +149,7 @@ export default function Fahrtentabelle({
                         <th>
                             Datum
                             <button
+                                type="button"
                                 className="btn btn-sm btn-outline-secondary ms-2"
                                 title="Zur neuesten Tour scrollen"
                                 onClick={() => {
@@ -192,6 +193,10 @@ export default function Fahrtentabelle({
                             ));
 
                             return (
+                                // The open-row state in geoeffneteZeilen is keyed by index too, and tour.id is
+                                // optional - a row that was just inserted has none. Giving rows a stable identity
+                                // means changing that state, not just this key.
+                                // biome-ignore lint/suspicious/noArrayIndexKey: row identity is the index here
                                 <React.Fragment key={i}>
                                     <tr
                                         className={
@@ -221,6 +226,7 @@ export default function Fahrtentabelle({
                                         </td>
                                         <td className="text-end">
                                             <button
+                                                type="button"
                                                 className="btn btn-sm  btn-outline-danger"
                                                 onClick={(e) => {
                                                     e.stopPropagation();
