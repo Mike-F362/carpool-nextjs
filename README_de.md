@@ -400,8 +400,14 @@ Ehrliche Liste dessen, was diese Version *nicht* kann.
    steckt in *einem* Bucket und wird nur abgetragen, wenn genau diese Besetzung wiederkommt.
 4. **Kapazität ist nicht modelliert.** Sitzplätze kommen nirgends vor; das Schema kann zwei Fahrer
    auf einer Etappe nicht ausdrücken.
-5. **Die Berechnung liegt im App-Prozess.** Die Stored Procedures liefern nur die verschiedenen
-   Anwesenheitsmengen; danach wird die Fahrtentabelle je Menge einmal nach Node gezogen.
+5. **Die Quotenberechnung läuft im Serverprozess, nicht in der Datenbank.** Die Stored Procedures
+   liefern nur die verschiedenen Anwesenheitsmengen; die API-Route liest danach die Tabelle
+   `fahrten` je Menge einmal nach Node — `quotes_zw` sogar je Fahrer *und* Menge. Das sind viele
+   Roundtrips zwischen Server und Postgres für etwas, das die Datenbank in einer Abfrage
+   aggregieren könnte. Über das, was im Browser ankommt, sagt es nichts: `/api/fahrer/quotes_sp`
+   und `quotes_zw` antworten ausschließlich mit der fertigen Quotenzuordnung. Die Fahrtenliste,
+   die der Browser sehr wohl bekommt, stammt aus `/api/tours/list` und ist genau das, was die
+   Tabelle anzeigt.
 6. **Eine Gruppe je Instanz.** Kein `group_id`, keine Mandantenfähigkeit.
 7. **Oberfläche nur auf Deutsch**, keine i18n-Schicht.
 8. **Das verallgemeinerte Modell ist nicht angeschlossen.** `src/lib/fairness/model.ts` beherrscht

@@ -399,8 +399,13 @@ Honest list of what this version does *not* do.
    only unwinds when that exact constellation recurs.
 4. **Vehicle capacity is not modelled.** Seat counts appear nowhere; the schema cannot express two
    drivers on one leg.
-5. **Computation happens in the app process.** The stored procedures return only the distinct
-   attendance sets; the trip table is then pulled into Node once per set.
+5. **The quota computation runs in the server process, not in the database.** The stored
+   procedures return only the distinct attendance sets; the API route then reads the `fahrten`
+   table into Node once per set — `quotes_zw` once per driver *and* set. That is a lot of round
+   trips between the server and Postgres for something the database could aggregate in one query.
+   It says nothing about what the browser receives: `/api/fahrer/quotes_sp` and `quotes_zw` answer
+   with the finished quota map alone. The trip list the browser does get comes from
+   `/api/tours/list` and is what the table displays.
 6. **Single group per instance.** No `group_id`, no multi-tenancy.
 7. **German UI only**, no i18n layer.
 8. **The generalised model is not wired in.** `src/lib/fairness/model.ts` supports k legs and a
