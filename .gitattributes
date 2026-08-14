@@ -1,0 +1,20 @@
+# Normalise line endings in the repository, expand them per platform on
+# checkout. Without this, a batch file checked out with LF endings breaks:
+# cmd.exe locates GOTO targets by byte offset and fails to find its labels.
+* text=auto
+
+*.cmd text eol=crlf
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+*.sh  text eol=lf
+*.mjs text eol=lf
+*.sql text eol=lf
+
+# Pinned to LF rather than left unnormalised: the CSV readers in the golden
+# tests split on "\n", so a CR checked out on Windows would end up in the
+# last field of every row.
+tests/fixtures/*.csv text eol=lf
+
+*.png binary
+*.ico binary
