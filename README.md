@@ -261,8 +261,31 @@ npm test             # behaviour tests: algorithm, invariants, real history (Nod
 npm run test:schema  # schema, configuration and browser-compatibility checks
 npm run test:watch   # watch mode
 npm run typecheck    # tsc --noEmit
+npm run lint         # Biome: formatting and lint rules, read-only
+npm run lint:fix     # the same, applying the safe fixes
+npm run format       # formatter only
 npm run build        # production build
 ```
+
+### Lint and formatting
+
+[Biome](https://biomejs.dev) covers both, from a single
+[`biome.json`](biome.json). CI runs `biome ci`, which checks formatting and rules
+in one pass without changing anything: findings marked as errors fail the build,
+warnings stay visible in the log.
+
+Three rules are turned down from the defaults, deliberately:
+
+| Rule | Setting | Reason |
+|---|---|---|
+| `noNonNullAssertion` | off | almost every hit is `process.env.NEXT_PUBLIC_SUPABASE_URL!`, which is how the Supabase client is documented |
+| `noExplicitAny` | warn | 28 occurrences; typing them is the same work as turning on `strict` in the tsconfig and belongs in its own change |
+| `useExhaustiveDependencies` | warn | adding a dependency changes when an effect runs — on the start page that is the load order of tours and quotas; each case wants reading, not a bulk fix |
+
+The formatter follows what the code already did (four spaces, double quotes,
+semicolons). The one commit that reformatted the tree is listed in
+[`.git-blame-ignore-revs`](.git-blame-ignore-revs); `git config
+blame.ignoreRevsFile .git-blame-ignore-revs` keeps it out of `git blame`.
 
 ### Tests
 

@@ -261,8 +261,32 @@ npm test             # Verhaltenstests: Algorithmus, Invarianten, echte Historie
 npm run test:schema  # Schema, Konfiguration und Browser-Kompatibilität
 npm run test:watch   # Watch-Modus
 npm run typecheck    # tsc --noEmit
+npm run lint         # Biome: Format und Regeln, nur lesend
+npm run lint:fix     # dasselbe, wendet die sicheren Korrekturen an
+npm run format       # nur der Formatter
 npm run build        # Produktionsbuild
 ```
+
+### Lint und Formatierung
+
+[Biome](https://biomejs.dev) deckt beides ab, aus einer einzigen
+[`biome.json`](biome.json). Die CI ruft `biome ci` auf, das Format und Regeln in
+einem Lauf prüft, ohne etwas zu ändern: Als Fehler markierte Funde brechen den
+Build ab, Warnungen bleiben im Log sichtbar.
+
+Drei Regeln weichen bewusst von den Standardwerten ab:
+
+| Regel | Einstellung | Grund |
+|---|---|---|
+| `noNonNullAssertion` | aus | fast jeder Treffer ist `process.env.NEXT_PUBLIC_SUPABASE_URL!` — genau so ist der Supabase-Client dokumentiert |
+| `noExplicitAny` | Warnung | 28 Stellen; sie zu typisieren ist dieselbe Arbeit wie `strict` in der tsconfig einzuschalten und gehört in eine eigene Änderung |
+| `useExhaustiveDependencies` | Warnung | eine ergänzte Abhängigkeit ändert, wann ein Effekt läuft — auf der Startseite ist das die Ladereihenfolge von Fahrten und Quoten; jeder Fall will gelesen werden, nicht pauschal korrigiert |
+
+Der Formatter folgt dem, was der Code ohnehin tat (vier Leerzeichen, doppelte
+Anführungszeichen, Semikolons). Der eine Commit, der den Baum umformatiert hat,
+steht in [`.git-blame-ignore-revs`](.git-blame-ignore-revs); mit
+`git config blame.ignoreRevsFile .git-blame-ignore-revs` bleibt er aus
+`git blame` heraus.
 
 ### Tests
 

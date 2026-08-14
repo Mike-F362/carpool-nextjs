@@ -23,6 +23,11 @@ changelog while it was still a single-group prototype.
   app stays online-only by design, it merely fails more gracefully.
 - `npm run test:schema` as a script of its own, so the schema and security suite
   can be run without the behaviour tests.
+- Biome as linter and formatter (`npm run lint`, `npm run lint:fix`,
+  `npm run format`), checked in CI with `biome ci`. `noNonNullAssertion` is off
+  because the Supabase clients are documented that way; `noExplicitAny` and
+  `useExhaustiveDependencies` warn rather than fail, because both are their own
+  piece of work and neither should hold up the rest.
 - Backup script (`scripts/dump_db.sh`, `scripts/dump_db.cmd`) writing roles,
   schema and data as three files — the only order in which they restore. It runs
   pg_dump through the Supabase CLI in a container matching the server version and
@@ -31,6 +36,15 @@ changelog while it was still a single-group prototype.
 
 ### Fixed
 
+- Fifteen buttons carried no `type`. Inside a form the default is `submit`, so a
+  button with nothing but an `onClick` could submit the form around it — which is
+  where the delete buttons in the driver, invite and user tables sit.
+- Two labels in the login modal were not connected to their input, so tapping the
+  caption did not focus the field and a screen reader announced an unlabelled
+  input.
+- The driver lookup compared with `==` while the ids from `anwesend_ids` come out
+  of jsonb and are not reliably numbers. Both sides are now converted explicitly,
+  which keeps the result for mixed types instead of changing the proposal.
 - `/setup` was unreachable on a fresh installation. The auth middleware rejected
   every unauthenticated `/api` call except `/register`, so `/api/setup-admin`
   answered `401` in exactly the situation it exists for — before the first user
