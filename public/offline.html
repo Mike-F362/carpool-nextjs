@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Offline – Fahrtverteilung</title>
+    <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+    <meta name="theme-color" content="#ffffff">
+    <style>
+        :root {
+            color-scheme: light dark;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.5rem;
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: #fff;
+            color: #212529;
+        }
+
+        main {
+            max-width: 28rem;
+            text-align: center;
+        }
+
+        img {
+            width: 72px;
+            height: 72px;
+            margin-bottom: 1.25rem;
+        }
+
+        h1 {
+            font-size: 1.375rem;
+            margin: 0 0 .75rem;
+        }
+
+        p {
+            margin: 0 0 1.5rem;
+            line-height: 1.5;
+            color: #495057;
+        }
+
+        button {
+            font: inherit;
+            padding: .5rem 1.25rem;
+            border: 0;
+            border-radius: .375rem;
+            background: #0d6efd;
+            color: #fff;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #0b5ed7;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            body {
+                background: #212529;
+                color: #f8f9fa;
+            }
+
+            p {
+                color: #adb5bd;
+            }
+        }
+    </style>
+</head>
+<body>
+<main>
+    <img src="/android-chrome-192.png" alt="">
+    <h1>Keine Verbindung</h1>
+    <p>
+        Die Fahrtverteilung braucht eine Internetverbindung, um Fahrten zu laden und zu
+        speichern. Sobald du wieder online bist, geht es hier weiter.
+    </p>
+    <button type="button" onclick="location.reload()">Erneut versuchen</button>
+</main>
+<script>
+    // Sobald das Netz zurueck ist, selbst neu laden.
+    window.addEventListener('online', () => location.reload());
+</script>
+</body>
+</html>
