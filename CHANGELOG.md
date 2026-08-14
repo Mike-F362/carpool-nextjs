@@ -60,6 +60,12 @@ changelog while it was still a single-group prototype.
 
 ### Changed
 
+- The quota routes read the trips once and bucket them in a single pass.
+  `quotes_sp` previously issued one query per attendance set and `quotes_zw` one
+  per driver *and* set, each fetching the whole table and filtering it down to a
+  single bucket — nine and fourteen requests per page load against the current
+  history, where one each is enough. `tests/quotes.test.ts` pins the result
+  against the previous implementation over the real 143 trips.
 - The schema and security suite no longer runs with `continue-on-error` in CI.
   Every finding it documented is closed, so it gates the build like any other
   suite.

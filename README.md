@@ -294,9 +294,10 @@ blame.ignoreRevsFile .git-blame-ignore-revs` keeps it out of `git blame`.
 | `tests/unit.test.ts` | algorithm behaviour |
 | `tests/property.test.ts` | invariants across generated inputs |
 | `tests/golden.test.ts` | replay against the real trip history in `tests/fixtures/` |
+| `tests/quotes.test.ts` | the quota grouping against a reference implementation |
 | `tests/schema.test.ts` | schema, configuration and browser-compatibility guardrails |
 
-`npm test` covers the first three, `npm run test:schema` the fourth. All of them are green and gate
+`npm test` covers the first four, `npm run test:schema` the last. All of them are green and gate
 CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)), which additionally runs `tsc` on every
 push and pull request.
 
@@ -399,13 +400,20 @@ Honest list of what this version does *not* do.
    only unwinds when that exact constellation recurs.
 4. **Vehicle capacity is not modelled.** Seat counts appear nowhere; the schema cannot express two
    drivers on one leg.
-5. **The quota computation runs in the server process, not in the database.** The stored
-   procedures return only the distinct attendance sets; the API route then reads the `fahrten`
-   table into Node once per set — `quotes_zw` once per driver *and* set. That is a lot of round
-   trips between the server and Postgres for something the database could aggregate in one query.
-   It says nothing about what the browser receives: `/api/fahrer/quotes_sp` and `quotes_zw` answer
-   with the finished quota map alone. The trip list the browser does get comes from
-   `/api/tours/list` and is what the table displays.
+5. **The quota computation runs in the server process, not in the database.** Each route reads the
+   trips once and buckets them in a single pass, which is one query rather than a dozen — but the
+   aggregation itself is still Node's work, where a `GROUP BY` would do it in Postgres and return
+   a few dozen rows instead of the table. Note this says nothing about what the browser receives:
+   `/api/fahrer/quotes_sp` and `quotes_zw` answer with the finished quota map alone. The trip list
+   the browser does get comes from `/api/tours/list` and is what the table displays.
+
+   **This has a ceiling.** PostgREST caps every result set at `max_rows`, which is 1000 by default
+   both in [`supabase/config.toml`](supabase/config.toml) and in a hosted project. Reading the
+   trips means reading *all* of them, so from trip 1001 onwards the quotas would silently be
+   computed on a truncated table — no error, just a quietly wrong proposal. At roughly 220 trips a
+   year that is about four and a half years away. Raising the limit buys time; aggregating in the
+   database removes the problem, because the result is then a handful of rows regardless of
+   history length.
 6. **Single group per instance.** No `group_id`, no multi-tenancy.
 7. **German UI only**, no i18n layer.
 8. **The generalised model is not wired in.** `src/lib/fairness/model.ts` supports k legs and a

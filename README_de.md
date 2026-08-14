@@ -295,9 +295,10 @@ steht in [`.git-blame-ignore-revs`](.git-blame-ignore-revs); mit
 | `tests/unit.test.ts` | Verhalten des Algorithmus |
 | `tests/property.test.ts` | Invarianten über erzeugte Eingaben |
 | `tests/golden.test.ts` | Replay gegen die echte Historie in `tests/fixtures/` |
+| `tests/quotes.test.ts` | die Quotengruppierung gegen eine Referenzimplementierung |
 | `tests/schema.test.ts` | Leitplanken für Schema, Konfiguration und Browser-Kompatibilität |
 
-`npm test` deckt die ersten drei ab, `npm run test:schema` die vierte. Alle sind grün und
+`npm test` deckt die ersten vier ab, `npm run test:schema` die letzte. Alle sind grün und
 blockieren die CI ([`.github/workflows/ci.yml`](.github/workflows/ci.yml)), die zusätzlich bei
 jedem Push und Pull Request `tsc` ausführt.
 
@@ -400,14 +401,21 @@ Ehrliche Liste dessen, was diese Version *nicht* kann.
    steckt in *einem* Bucket und wird nur abgetragen, wenn genau diese Besetzung wiederkommt.
 4. **Kapazität ist nicht modelliert.** Sitzplätze kommen nirgends vor; das Schema kann zwei Fahrer
    auf einer Etappe nicht ausdrücken.
-5. **Die Quotenberechnung läuft im Serverprozess, nicht in der Datenbank.** Die Stored Procedures
-   liefern nur die verschiedenen Anwesenheitsmengen; die API-Route liest danach die Tabelle
-   `fahrten` je Menge einmal nach Node — `quotes_zw` sogar je Fahrer *und* Menge. Das sind viele
-   Roundtrips zwischen Server und Postgres für etwas, das die Datenbank in einer Abfrage
-   aggregieren könnte. Über das, was im Browser ankommt, sagt es nichts: `/api/fahrer/quotes_sp`
-   und `quotes_zw` antworten ausschließlich mit der fertigen Quotenzuordnung. Die Fahrtenliste,
-   die der Browser sehr wohl bekommt, stammt aus `/api/tours/list` und ist genau das, was die
-   Tabelle anzeigt.
+5. **Die Quotenberechnung läuft im Serverprozess, nicht in der Datenbank.** Jede Route liest die
+   Fahrten einmal und bildet alle Töpfe in einem Durchlauf — eine Abfrage statt eines Dutzends.
+   Die Aggregation selbst bleibt aber Arbeit von Node, während ein `GROUP BY` sie in Postgres
+   erledigen und ein paar Dutzend Zeilen statt der Tabelle zurückgeben würde. Über das, was im
+   Browser ankommt, sagt das nichts: `/api/fahrer/quotes_sp` und `quotes_zw` antworten
+   ausschließlich mit der fertigen Quotenzuordnung. Die Fahrtenliste, die der Browser sehr wohl
+   bekommt, stammt aus `/api/tours/list` und ist genau das, was die Tabelle anzeigt.
+
+   **Das hat eine Obergrenze.** PostgREST deckelt jedes Resultset bei `max_rows` — Vorgabe 1000,
+   sowohl in [`supabase/config.toml`](supabase/config.toml) als auch im gehosteten Projekt. Die
+   Fahrten zu lesen heißt, *alle* zu lesen; ab Fahrt 1001 würden die Quoten also stillschweigend
+   auf einer abgeschnittenen Tabelle berechnet — keine Fehlermeldung, nur ein leise falscher
+   Vorschlag. Bei rund 220 Fahrten im Jahr ist das etwa viereinhalb Jahre entfernt. Die Grenze
+   hochzusetzen verschafft Zeit; in der Datenbank zu aggregieren beseitigt das Problem, weil das
+   Ergebnis dann unabhängig von der Länge der Historie eine Handvoll Zeilen ist.
 6. **Eine Gruppe je Instanz.** Kein `group_id`, keine Mandantenfähigkeit.
 7. **Oberfläche nur auf Deutsch**, keine i18n-Schicht.
 8. **Das verallgemeinerte Modell ist nicht angeschlossen.** `src/lib/fairness/model.ts` beherrscht
