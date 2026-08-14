@@ -15,8 +15,8 @@ export default function SetupPage() {
 
     useEffect(() => {
         fetch("/api/setup-admin/check")
-            .then(res => res.json())
-            .then(data => {
+            .then((res) => res.json())
+            .then((data) => {
                 if (data.exists) router.push("/");
                 else setReady(true);
             });
@@ -30,7 +30,7 @@ export default function SetupPage() {
         const res = await fetch("/api/setup-admin", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password: pw })
+            body: JSON.stringify({ email, password: pw }),
         });
 
         const data = await res.json();
@@ -50,8 +50,22 @@ export default function SetupPage() {
             <h3>Initiale Einrichtung</h3>
             <p>Erstelle deinen ersten Admin-Benutzer.</p>
             <form onSubmit={handleSubmit}>
-                <input className="form-control my-2" placeholder="E-Mail" type="email" value={email} onChange={e => setEmail(e.target.value)} required />
-                <input className="form-control my-2" placeholder="Passwort" type="password" value={pw} onChange={e => setPw(e.target.value)} required />
+                <input
+                    className="form-control my-2"
+                    placeholder="E-Mail"
+                    type="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                />
+                <input
+                    className="form-control my-2"
+                    placeholder="Passwort"
+                    type="password"
+                    value={pw}
+                    onChange={(e) => setPw(e.target.value)}
+                    required
+                />
                 <button className="btn btn-primary w-100" disabled={disabled} type="submit">
                     Admin erstellen
                 </button>

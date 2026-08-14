@@ -20,54 +20,53 @@
  * beim Aktivieren geloescht.
  */
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = "v1";
 const ASSET_CACHE = `assets-${CACHE_VERSION}`;
 const SHELL_CACHE = `shell-${CACHE_VERSION}`;
 const AKTUELLE_CACHES = [ASSET_CACHE, SHELL_CACHE];
 
-const OFFLINE_SEITE = '/offline.html';
+const OFFLINE_SEITE = "/offline.html";
 
 /** Dateien unter /public, die sich lohnen vorzuhalten. */
 const SHELL_DATEIEN = [
     OFFLINE_SEITE,
-    '/manifest.json',
-    '/favicon.svg',
-    '/android-chrome-192.png',
-    '/android-chrome-512.png',
+    "/manifest.json",
+    "/favicon.svg",
+    "/android-chrome-192.png",
+    "/android-chrome-512.png",
 ];
 
-self.addEventListener('install', (event) => {
+self.addEventListener("install", (event) => {
     event.waitUntil(
-        caches.open(SHELL_CACHE)
+        caches
+            .open(SHELL_CACHE)
             .then((cache) => cache.addAll(SHELL_DATEIEN))
             // Sofort uebernehmen. Unbedenklich, weil ausschliesslich
             // gehashte, unveraenderliche Dateien aus dem Cache kommen -
             // ein Wechsel mitten in der Sitzung kann keine Chunks mischen.
-            .then(() => self.skipWaiting())
+            .then(() => self.skipWaiting()),
     );
 });
 
-self.addEventListener('activate', (event) => {
+self.addEventListener("activate", (event) => {
     event.waitUntil(
-        caches.keys()
-            .then((namen) => Promise.all(
-                namen
-                    .filter((name) => !AKTUELLE_CACHES.includes(name))
-                    .map((name) => caches.delete(name))
-            ))
-            .then(() => self.clients.claim())
+        caches
+            .keys()
+            .then((namen) =>
+                Promise.all(namen.filter((name) => !AKTUELLE_CACHES.includes(name)).map((name) => caches.delete(name))),
+            )
+            .then(() => self.clients.claim()),
     );
 });
 
 /** Unveraenderliche Build-Artefakte von Next.js. */
 function istBuildArtefakt(url) {
-    return url.pathname.startsWith('/_next/static/');
+    return url.pathname.startsWith("/_next/static/");
 }
 
 /** Statisches aus /public, das sich zwischen Deployments aendern kann. */
 function istStatischesAsset(url) {
-    return SHELL_DATEIEN.includes(url.pathname)
-        || /\.(?:png|svg|ico|webmanifest)$/.test(url.pathname);
+    return SHELL_DATEIEN.includes(url.pathname) || /\.(?:png|svg|ico|webmanifest)$/.test(url.pathname);
 }
 
 async function cacheFirst(request, cacheName) {
@@ -100,18 +99,21 @@ async function navigationMitOfflineFallback(request) {
     } catch (fehler) {
         const cache = await caches.open(SHELL_CACHE);
         const offline = await cache.match(OFFLINE_SEITE);
-        return offline || new Response('Offline', {
-            status: 503,
-            headers: {'Content-Type': 'text/plain; charset=utf-8'},
-        });
+        return (
+            offline ||
+            new Response("Offline", {
+                status: 503,
+                headers: { "Content-Type": "text/plain; charset=utf-8" },
+            })
+        );
     }
 }
 
-self.addEventListener('fetch', (event) => {
-    const {request} = event;
+self.addEventListener("fetch", (event) => {
+    const { request } = event;
 
     // Nur GET. Alles Schreibende geht ungefiltert ans Netz.
-    if (request.method !== 'GET') return;
+    if (request.method !== "GET") return;
 
     const url = new URL(request.url);
 
@@ -119,9 +121,9 @@ self.addEventListener('fetch', (event) => {
     if (url.origin !== self.location.origin) return;
 
     // API-Routen nie zwischenspeichern - sie haengen an der Sitzung.
-    if (url.pathname.startsWith('/api/')) return;
+    if (url.pathname.startsWith("/api/")) return;
 
-    if (request.mode === 'navigate') {
+    if (request.mode === "navigate") {
         event.respondWith(navigationMitOfflineFallback(request));
         return;
     }

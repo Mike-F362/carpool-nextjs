@@ -26,13 +26,13 @@ export interface Member {
 }
 
 export interface Tour {
-    date: string;              // ISO, lokal gebildet - nie via toISOString()
+    date: string; // ISO, lokal gebildet - nie via toISOString()
     present: number[];
     /** Fahrer je Etappe, Index 0 = Etappe 1. */
     drivers: number[];
 }
 
-export type Basis = 'fahrberechtigte' | 'mitfahrer';
+export type Basis = "fahrberechtigte" | "mitfahrer";
 
 export interface Options {
     basis: Basis;
@@ -48,7 +48,7 @@ const weightOf = (o: Options, leg: number) => o.weights?.[leg - 1] ?? 1;
 
 /** Anzahl Etappen = Anzahl Stopps - 1, mindestens 1. */
 export function legCount(members: Member[]): number {
-    return Math.max(1, Math.max(...members.map(m => m.stop)) - 1 + 1);
+    return Math.max(1, Math.max(...members.map((m) => m.stop)) - 1 + 1);
 }
 
 /**
@@ -56,25 +56,32 @@ export function legCount(members: Member[]): number {
  * plus wer die Vorgaengeretappe gefahren hat - dessen Fahrzeug faehrt weiter.
  */
 export function eligibleDrivers(
-    members: Member[], present: number[], leg: number, prevDriver: number | null,
+    members: Member[],
+    present: number[],
+    leg: number,
+    prevDriver: number | null,
 ): number[] {
-    const by = new Map(members.map(m => [m.id, m]));
-    const out = present.filter(id => by.get(id)?.canDrive && by.get(id)!.stop === leg);
+    const by = new Map(members.map((m) => [m.id, m]));
+    const out = present.filter((id) => by.get(id)?.canDrive && by.get(id)!.stop === leg);
     if (prevDriver != null && !out.includes(prevDriver)) out.push(prevDriver);
     return out.sort((a, b) => a - b);
 }
 
 /** Wer FAEHRT auf Etappe `leg` mit: alle, die an einem Stopp <= leg zugestiegen sind. */
 export function ridersOnLeg(members: Member[], present: number[], leg: number): number[] {
-    const by = new Map(members.map(m => [m.id, m]));
-    return present.filter(id => (by.get(id)?.stop ?? Infinity) <= leg).sort((a, b) => a - b);
+    const by = new Map(members.map((m) => [m.id, m]));
+    return present.filter((id) => (by.get(id)?.stop ?? Infinity) <= leg).sort((a, b) => a - b);
 }
 
 /** Wer traegt die Pflicht fuer Etappe `leg` - der eine strittige Punkt im Modell. */
 export function obligedFor(
-    members: Member[], present: number[], leg: number, prevDriver: number | null, basis: Basis,
+    members: Member[],
+    present: number[],
+    leg: number,
+    prevDriver: number | null,
+    basis: Basis,
 ): number[] {
-    return basis === 'mitfahrer'
+    return basis === "mitfahrer"
         ? ridersOnLeg(members, present, leg)
         : eligibleDrivers(members, present, leg, prevDriver);
 }
@@ -97,13 +104,17 @@ export function lastDriveDates(history: Tour[]): Map<number, string> {
  * Fahrt, dann kleinste Id. Die letzte Stufe garantiert Determinismus.
  */
 export function chooseDriver(
-    candidates: number[], ledger: Ledger, leg: number, last: Map<number, string>,
+    candidates: number[],
+    ledger: Ledger,
+    leg: number,
+    last: Map<number, string>,
 ): number | null {
     if (candidates.length === 0) return null;
     return [...candidates].sort((a, b) => {
         const d = (ledger.get(key(a, leg)) ?? 0) - (ledger.get(key(b, leg)) ?? 0);
         if (Math.abs(d) > 1e-9) return d;
-        const la = last.get(a) ?? '', lb = last.get(b) ?? '';
+        const la = last.get(a) ?? "",
+            lb = last.get(b) ?? "";
         if (la !== lb) return la < lb ? -1 : 1;
         return a - b;
     })[0];
@@ -111,8 +122,11 @@ export function chooseDriver(
 
 /** Vorschlag fuer alle Etappen. Etappe n haengt von der Wahl auf n-1 ab. */
 export function suggestDrivers(
-    members: Member[], present: number[], ledger: Ledger,
-    last: Map<number, string>, opts: Options,
+    members: Member[],
+    present: number[],
+    ledger: Ledger,
+    last: Map<number, string>,
+    opts: Options,
 ): (number | null)[] {
     const legs = legCount(members);
     const out: (number | null)[] = [];
@@ -163,13 +177,11 @@ export interface Fairness {
 }
 
 /** Soll/Ist je Person und Etappe, gemessen am angegebenen Massstab. */
-export function evaluateFairness(
-    members: Member[], history: Tour[], opts: Options,
-): Map<string, Fairness> {
+export function evaluateFairness(members: Member[], history: Tour[], opts: Options): Map<string, Fairness> {
     const st = new Map<string, Fairness>();
     const get = (id: number, leg: number) => {
         const k = key(id, leg);
-        if (!st.has(k)) st.set(k, {soll: 0, ist: 0, delta: 0, tage: 0});
+        if (!st.has(k)) st.set(k, { soll: 0, ist: 0, delta: 0, tage: 0 });
         return st.get(k)!;
     };
     const legs = legCount(members);
@@ -194,14 +206,12 @@ export function evaluateFairness(
 }
 
 /** Spreizung max-min der Deltas auf einer Etappe. Das ist "stimmt die Summe?". */
-export function spreadOnLeg(
-    members: Member[], history: Tour[], leg: number, opts: Options,
-): number {
+export function spreadOnLeg(members: Member[], history: Tour[], leg: number, opts: Options): number {
     const st = evaluateFairness(members, history, opts);
     const d = members
-        .map(m => st.get(key(m.id, leg)))
+        .map((m) => st.get(key(m.id, leg)))
         .filter((s): s is Fairness => !!s && s.tage > 0)
-        .map(s => s.delta);
+        .map((s) => s.delta);
     return d.length ? Math.max(...d) - Math.min(...d) : 0;
 }
 
@@ -210,6 +220,6 @@ export function spreadOnLeg(
  * Zeitzonen oestlich von UTC einen Tag zurueckspringen kann.
  */
 export function localDateString(d: Date): string {
-    const p = (n: number) => String(n).padStart(2, '0');
+    const p = (n: number) => String(n).padStart(2, "0");
     return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
 }

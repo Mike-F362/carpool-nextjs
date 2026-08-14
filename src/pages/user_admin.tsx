@@ -1,6 +1,6 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
-import {withRoleAuthSsr} from "@/lib/withRoleAuthSsr";
+import { withRoleAuthSsr } from "@/lib/withRoleAuthSsr";
 
 export const getServerSideProps = withRoleAuthSsr("admin");
 
@@ -9,7 +9,7 @@ export default function UserAdminPage() {
 
     const fetchUsers = async () => {
         const res = await fetch("/api/users/list");
-        const data = await res.json() || [];
+        const data = (await res.json()) || [];
         setUsers(data);
     };
 
@@ -21,7 +21,7 @@ export default function UserAdminPage() {
         await fetch("/api/users/set-role", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ id, role })
+            body: JSON.stringify({ id, role }),
         });
         await fetchUsers();
     };
@@ -31,8 +31,8 @@ export default function UserAdminPage() {
 
         await fetch("/api/users/delete", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({id: id})
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: id }),
         });
         await fetchUsers();
     };
@@ -42,35 +42,35 @@ export default function UserAdminPage() {
             <h3>Benutzerverwaltung</h3>
             <table className="table">
                 <thead>
-                <tr>
-                    <th>E-Mail</th>
-                    <th>Rolle</th>
-                    <th>Aktion</th>
-                    <th></th>
-                </tr>
+                    <tr>
+                        <th>E-Mail</th>
+                        <th>Rolle</th>
+                        <th>Aktion</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody>
-                {users.map((user) => (
-                    <tr key={user.id}>
-                        <td>{user.email}</td>
-                        <td>{user.role}</td>
-                        <td>
-                            <select
-                                className="form-select form-select-sm"
-                                value={user.role}
-                                onChange={(e) => handleRoleChange(user.id, e.target.value)}
-                            >
-                                <option value="user">user</option>
-                                <option value="admin">admin</option>
-                            </select>
-                        </td>
-                        <td>
-                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(user.id)}>
-                                Löschen
-                            </button>
-                        </td>
-                    </tr>
-                ))}
+                    {users.map((user) => (
+                        <tr key={user.id}>
+                            <td>{user.email}</td>
+                            <td>{user.role}</td>
+                            <td>
+                                <select
+                                    className="form-select form-select-sm"
+                                    value={user.role}
+                                    onChange={(e) => handleRoleChange(user.id, e.target.value)}
+                                >
+                                    <option value="user">user</option>
+                                    <option value="admin">admin</option>
+                                </select>
+                            </td>
+                            <td>
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(user.id)}>
+                                    Löschen
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </AdminLayout>

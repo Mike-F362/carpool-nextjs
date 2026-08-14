@@ -1,5 +1,5 @@
-import {createServerClient} from '@supabase/ssr'
-import type {NextApiRequest} from 'next'
+import { createServerClient } from "@supabase/ssr";
+import type { NextApiRequest } from "next";
 
 /**
  * Supabase client for API routes (Pages Router), bound to the caller's
@@ -14,20 +14,16 @@ import type {NextApiRequest} from 'next'
  * `src/lib/middleware/checkAuth.ts`.
  */
 export function createApiClient(req: NextApiRequest) {
-    return createServerClient(
-        process.env.NEXT_PUBLIC_SUPABASE_URL!,
-        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-        {
-            cookies: {
-                getAll() {
-                    return Object.entries(req.cookies)
-                        .filter(([, value]) => value !== undefined)
-                        .map(([name, value]) => ({name, value: value as string}))
-                },
-                setAll() {
-                    // intentionally empty, see comment above
-                },
+    return createServerClient(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!, {
+        cookies: {
+            getAll() {
+                return Object.entries(req.cookies)
+                    .filter(([, value]) => value !== undefined)
+                    .map(([name, value]) => ({ name, value: value as string }));
             },
-        }
-    )
+            setAll() {
+                // intentionally empty, see comment above
+            },
+        },
+    });
 }

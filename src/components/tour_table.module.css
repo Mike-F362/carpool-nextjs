@@ -43,15 +43,15 @@
 }
 
 /* CSS Stripes made by https://toolcool.org/svg-stripes-maker-react/ */
-table tr.sameTourImSp{
+table tr.sameTourImSp {
     background-image: url("data:image/svg+xml,%3Csvg%20id%3D'stripes-svg'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'100%25'%20height%3D'100%25'%3E%3Cdefs%3E%3Cpattern%20id%3D'svg-stripes-pattern-11668'%20patternTransform%3D'rotate(316)'%20width%3D'100%25'%20height%3D'14'%20x%3D'0'%20y%3D'0'%20patternUnits%3D'userSpaceOnUse'%3E%3Cg%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'6'%20fill%3D'rgba(255%2C%20255%2C%20255%2C%201)'%3E%3C%2Frect%3E%3Crect%20x%3D'0'%20y%3D'6'%20width%3D'100%25'%20height%3D'1'%20fill%3D'rgba(207%2C%20226%2C%20255%2C%201)'%3E%3C%2Frect%3E%3Crect%20x%3D'0'%20y%3D'7'%20width%3D'100%25'%20height%3D'6'%20fill%3D'rgba(255%2C%20255%2C%20255%2C%201)'%3E%3C%2Frect%3E%3Crect%20x%3D'0'%20y%3D'13'%20width%3D'100%25'%20height%3D'1'%20fill%3D'rgba(255%2C%20243%2C%20205%2C%201)'%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'url(%23svg-stripes-pattern-11668)'%3E%3C%2Frect%3E%3C%2Fsvg%3E");
 }
 
-table tr.sameTourIm{
+table tr.sameTourIm {
     background-image: url("data:image/svg+xml,%3Csvg%20id%3D'stripes-svg'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'100%25'%20height%3D'100%25'%3E%3Cdefs%3E%3Cpattern%20id%3D'svg-stripes-pattern-11887'%20patternTransform%3D'rotate(316)'%20width%3D'100%25'%20height%3D'7'%20x%3D'0'%20y%3D'0'%20patternUnits%3D'userSpaceOnUse'%3E%3Cg%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'6'%20fill%3D'rgba(255%2C%20255%2C%20255%2C%201)'%3E%3C%2Frect%3E%3Crect%20x%3D'0'%20y%3D'6'%20width%3D'100%25'%20height%3D'1'%20fill%3D'rgba(207%2C%20226%2C%20255%2C%201)'%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'url(%23svg-stripes-pattern-11887)'%3E%3C%2Frect%3E%3C%2Fsvg%3E");
 }
 
-table tr.sameTourSp{
+table tr.sameTourSp {
     background-image: url("data:image/svg+xml,%3Csvg%20id%3D'stripes-svg'%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20width%3D'100%25'%20height%3D'100%25'%3E%3Cdefs%3E%3Cpattern%20id%3D'svg-stripes-pattern-12009'%20patternTransform%3D'rotate(316)'%20width%3D'100%25'%20height%3D'7'%20x%3D'0'%20y%3D'0'%20patternUnits%3D'userSpaceOnUse'%3E%3Cg%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'6'%20fill%3D'rgba(255%2C%20255%2C%20255%2C%201)'%3E%3C%2Frect%3E%3Crect%20x%3D'0'%20y%3D'6'%20width%3D'100%25'%20height%3D'1'%20fill%3D'rgba(255%2C%20243%2C%20205%2C%201)'%3E%3C%2Frect%3E%3C%2Fg%3E%3C%2Fpattern%3E%3C%2Fdefs%3E%3Crect%20x%3D'0'%20y%3D'0'%20width%3D'100%25'%20height%3D'100%25'%20fill%3D'url(%23svg-stripes-pattern-12009)'%3E%3C%2Frect%3E%3C%2Fsvg%3E");
 }
 
@@ -63,7 +63,9 @@ table tr.sameTourSp{
     background-color: #cfe2ff;
 }
 
-.sameTourSp td, .sameTourIm td, .sameTourImSp td{
+.sameTourSp td,
+.sameTourIm td,
+.sameTourImSp td {
     background-color: unset;
 }
 

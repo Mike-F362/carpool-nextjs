@@ -1,5 +1,5 @@
-import {createServerClient} from '@supabase/ssr'
-import {type NextRequest, NextResponse} from 'next/server'
+import { createServerClient } from "@supabase/ssr";
+import { type NextRequest, NextResponse } from "next/server";
 
 /**
  * API-Routen, die ohne Sitzung erreichbar sein muessen. Beide pruefen die
@@ -16,21 +16,16 @@ import {type NextRequest, NextResponse} from 'next/server'
  * Exakter Pfadvergleich (oder Praefix mit '/'), damit die Liste nicht
  * versehentlich fremde Routen mit gleicher Endung freigibt.
  */
-const OEFFENTLICHE_API_ROUTEN = [
-    '/api/invite/register',
-    '/api/setup-admin',
-] as const;
+const OEFFENTLICHE_API_ROUTEN = ["/api/invite/register", "/api/setup-admin"] as const;
 
 function istOeffentlicheApiRoute(pathname: string): boolean {
-    return OEFFENTLICHE_API_ROUTEN.some(
-        route => pathname === route || pathname.startsWith(`${route}/`)
-    );
+    return OEFFENTLICHE_API_ROUTEN.some((route) => pathname === route || pathname.startsWith(`${route}/`));
 }
 
 export async function updateSession(request: NextRequest) {
     let supabaseResponse = NextResponse.next({
         request,
-    })
+    });
 
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -38,20 +33,20 @@ export async function updateSession(request: NextRequest) {
         {
             cookies: {
                 getAll() {
-                    return request.cookies.getAll()
+                    return request.cookies.getAll();
                 },
                 setAll(cookiesToSet) {
-                    cookiesToSet.forEach(({name, value, options}) => request.cookies.set(name, value))
+                    cookiesToSet.forEach(({ name, value, options }) => request.cookies.set(name, value));
                     supabaseResponse = NextResponse.next({
                         request,
-                    })
-                    cookiesToSet.forEach(({name, value, options}) =>
-                        supabaseResponse.cookies.set(name, value, options)
-                    )
+                    });
+                    cookiesToSet.forEach(({ name, value, options }) =>
+                        supabaseResponse.cookies.set(name, value, options),
+                    );
                 },
             },
-        }
-    )
+        },
+    );
 
     // Do not run code between createServerClient and
     // supabase.auth.getUser(). A simple mistake could make it very hard to debug
@@ -60,17 +55,13 @@ export async function updateSession(request: NextRequest) {
     // IMPORTANT: DO NOT REMOVE auth.getUser()
 
     const {
-        data: {user},
-    } = await supabase.auth.getUser()
+        data: { user },
+    } = await supabase.auth.getUser();
 
-    if (
-        !user &&
-        request.nextUrl.pathname.startsWith('/api') &&
-        !istOeffentlicheApiRoute(request.nextUrl.pathname)
-    ) {
-        return new NextResponse(JSON.stringify({error: 'Unauthorized 401'}), {
+    if (!user && request.nextUrl.pathname.startsWith("/api") && !istOeffentlicheApiRoute(request.nextUrl.pathname)) {
+        return new NextResponse(JSON.stringify({ error: "Unauthorized 401" }), {
             status: 401,
-            headers: {'Content-Type': 'application/json'},
+            headers: { "Content-Type": "application/json" },
         });
     }
 
@@ -87,5 +78,5 @@ export async function updateSession(request: NextRequest) {
     // If this is not done, you may be causing the browser and server to go out
     // of sync and terminate the user's session prematurely!
 
-    return supabaseResponse
+    return supabaseResponse;
 }

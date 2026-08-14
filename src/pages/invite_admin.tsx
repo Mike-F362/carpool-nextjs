@@ -1,7 +1,7 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
 import InviteLink from "@/components/invite_link";
-import {withRoleAuthSsr} from "@/lib/withRoleAuthSsr";
+import { withRoleAuthSsr } from "@/lib/withRoleAuthSsr";
 
 export const getServerSideProps = withRoleAuthSsr("admin");
 
@@ -23,11 +23,12 @@ export default function InviteAdminPage() {
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();
-        setMsg(""); setErr("");
+        setMsg("");
+        setErr("");
         const res = await fetch("/api/invite/create", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, role: "user" })
+            body: JSON.stringify({ email, role: "user" }),
         });
         const data = await res.json();
         if (!res.ok) {
@@ -43,7 +44,7 @@ export default function InviteAdminPage() {
         await fetch("/api/invite/delete", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ code })
+            body: JSON.stringify({ code }),
         });
         await loadInvites();
     };
@@ -69,26 +70,26 @@ export default function InviteAdminPage() {
 
             <table className="table mt-4">
                 <thead>
-                <tr>
-                    <th>E-Mail</th>
-                    <th>Rolle</th>
-                    <th>Code</th>
-                    <th></th>
-                </tr>
+                    <tr>
+                        <th>E-Mail</th>
+                        <th>Rolle</th>
+                        <th>Code</th>
+                        <th></th>
+                    </tr>
                 </thead>
                 <tbody>
-                {invites.map((i) => (
-                    <tr key={i.code}>
-                        <td>{i.email}</td>
-                        <td>{i.role}</td>
-                        <InviteLink key={i.code} token={i.code} email={i.email} />
-                        <td>
-                            <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(i.code)}>
-                                Löschen
-                            </button>
-                        </td>
-                    </tr>
-                ))}
+                    {invites.map((i) => (
+                        <tr key={i.code}>
+                            <td>{i.email}</td>
+                            <td>{i.role}</td>
+                            <InviteLink key={i.code} token={i.code} email={i.email} />
+                            <td>
+                                <button className="btn btn-sm btn-outline-danger" onClick={() => handleDelete(i.code)}>
+                                    Löschen
+                                </button>
+                            </td>
+                        </tr>
+                    ))}
                 </tbody>
             </table>
         </AdminLayout>

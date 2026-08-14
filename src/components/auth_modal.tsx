@@ -1,5 +1,5 @@
 "use client";
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function AuthModal({ onClose }: { onClose: () => void }) {
@@ -54,7 +54,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                                 type="email"
                                 className="form-control"
                                 value={email}
-                                onChange={e => setEmail(e.target.value)}
+                                onChange={(e) => setEmail(e.target.value)}
                                 required
                             />
                         </div>
@@ -64,7 +64,7 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                                 type="password"
                                 className="form-control"
                                 value={pw}
-                                onChange={e => setPw(e.target.value)}
+                                onChange={(e) => setPw(e.target.value)}
                                 required
                             />
                         </div>
@@ -78,8 +78,12 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
                         {info && <div className="alert alert-success mt-2 py-2">{info}</div>}
                     </div>
                     <div className="modal-footer">
-                        <button className="btn btn-primary" type="submit">Anmelden</button>
-                        <button className="btn btn-secondary" type="button" onClick={onClose}>Abbrechen</button>
+                        <button className="btn btn-primary" type="submit">
+                            Anmelden
+                        </button>
+                        <button className="btn btn-secondary" type="button" onClick={onClose}>
+                            Abbrechen
+                        </button>
                     </div>
                 </form>
             </div>

@@ -42,14 +42,12 @@
     align-items: center;
 }
 
-
 /* Responsive Anpassung für kleine Displays */
 @media (max-width: 300px) {
     .titleRow {
         /*flex-direction: column-reverse;*/
         flex-direction: column;
         align-items: flex-start;
-
     }
 
     .menuRow {

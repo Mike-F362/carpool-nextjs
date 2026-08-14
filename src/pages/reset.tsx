@@ -29,9 +29,11 @@ export default function ResetPage() {
                     className="form-control my-3"
                     placeholder="Neues Passwort"
                     value={pw}
-                    onChange={e => setPw(e.target.value)}
+                    onChange={(e) => setPw(e.target.value)}
                 />
-                <button className="btn btn-primary" type="submit">Speichern</button>
+                <button className="btn btn-primary" type="submit">
+                    Speichern
+                </button>
             </form>
             {done && <div className="text-success mt-3">✔ Passwort gespeichert. Weiterleitung…</div>}
         </div>

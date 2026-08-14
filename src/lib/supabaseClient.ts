@@ -1,4 +1,4 @@
-import {createBrowserClient} from "@supabase/ssr";
+import { createBrowserClient } from "@supabase/ssr";
 
 export const supabase = createBrowserClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -8,5 +8,5 @@ export const supabase = createBrowserClient(
             persistSession: true,
             autoRefreshToken: true,
         },
-    }
+    },
 );

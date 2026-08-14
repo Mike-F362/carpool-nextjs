@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/router";
 
 export default function RegisterPage() {
@@ -26,7 +26,7 @@ export default function RegisterPage() {
         const res = await fetch("/api/invite/register", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ email, password, code })
+            body: JSON.stringify({ email, password, code }),
         });
 
         const data = await res.json();
@@ -68,11 +68,7 @@ export default function RegisterPage() {
                     onChange={(e) => setCode(e.target.value)}
                     required
                 />
-                <button
-                    type="submit"
-                    className="btn btn-primary w-100"
-                    disabled={loading}
-                >
+                <button type="submit" className="btn btn-primary w-100" disabled={loading}>
                     Registrieren
                 </button>
             </form>

@@ -27,15 +27,19 @@ NEXT_PUBLIC_COMMIT_HASH=${commitHash}
 const envPath = path.resolve(__dirname, "../.env.local");
 const existing = fs.existsSync(envPath) ? fs.readFileSync(envPath, "utf-8") : "";
 
-const updated = existing
-    .split("\n")
-    .filter(line =>
-        !line.startsWith("NEXT_PUBLIC_APP_VERSION=") &&
-        !line.startsWith("NEXT_PUBLIC_GIT_TAG=") &&
-        !line.startsWith("NEXT_PUBLIC_COMMIT_HASH=")
-    )
-    .join("\n")
-    .trim() + "\n" + envContent.trim();
+const updated =
+    existing
+        .split("\n")
+        .filter(
+            (line) =>
+                !line.startsWith("NEXT_PUBLIC_APP_VERSION=") &&
+                !line.startsWith("NEXT_PUBLIC_GIT_TAG=") &&
+                !line.startsWith("NEXT_PUBLIC_COMMIT_HASH="),
+        )
+        .join("\n")
+        .trim() +
+    "\n" +
+    envContent.trim();
 
 fs.writeFileSync(envPath, updated);
 console.log("✅ .env.local updated.");

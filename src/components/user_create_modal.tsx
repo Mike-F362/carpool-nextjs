@@ -41,7 +41,7 @@ export default function UserCreateModal({ onClose }: { onClose: () => void }) {
                             placeholder="E-Mail"
                             type="email"
                             value={email}
-                            onChange={e => setEmail(e.target.value)}
+                            onChange={(e) => setEmail(e.target.value)}
                             required
                         />
                         <input
@@ -49,15 +49,19 @@ export default function UserCreateModal({ onClose }: { onClose: () => void }) {
                             placeholder="Passwort"
                             type="password"
                             value={pw}
-                            onChange={e => setPw(e.target.value)}
+                            onChange={(e) => setPw(e.target.value)}
                             required
                         />
                         {error && <div className="alert alert-danger py-1 small">{error}</div>}
                         {info && <div className="alert alert-success py-1 small">{info}</div>}
                     </div>
                     <div className="modal-footer">
-                        <button type="submit" className="btn btn-primary">Benutzer erstellen</button>
-                        <button type="button" className="btn btn-secondary" onClick={onClose}>Schließen</button>
+                        <button type="submit" className="btn btn-primary">
+                            Benutzer erstellen
+                        </button>
+                        <button type="button" className="btn btn-secondary" onClick={onClose}>
+                            Schließen
+                        </button>
                     </div>
                 </form>
             </div>

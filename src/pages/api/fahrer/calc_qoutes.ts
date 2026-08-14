@@ -1,8 +1,11 @@
-import {SupabaseClient} from "@supabase/supabase-js";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
-export async function get_drivers(supabase: SupabaseClient<any, "public" extends keyof any ? "public" : (string & keyof any), any>, startPoint: number) {
+export async function get_drivers(
+    supabase: SupabaseClient<any, "public" extends keyof any ? "public" : string & keyof any, any>,
+    startPoint: number,
+) {
     // Zwischenfahrer mit startpunkt = 2
-    const {data: zwischenfahrer, error: err1} = await supabase
+    const { data: zwischenfahrer, error: err1 } = await supabase
         .from("fahrer")
         .select("id")
         .eq("startpunkt", startPoint);
@@ -13,13 +16,15 @@ export async function get_drivers(supabase: SupabaseClient<any, "public" extends
     return zwischenIds;
 }
 
-export async function calcQuoteSp(supabase: SupabaseClient<any, "public" extends keyof any ? "public" : (string & keyof any), any>, anwesend: number[], zwischenIds: Set<any>) {
+export async function calcQuoteSp(
+    supabase: SupabaseClient<any, "public" extends keyof any ? "public" : string & keyof any, any>,
+    anwesend: number[],
+    zwischenIds: Set<any>,
+) {
     const anwesendOhneZwischen = anwesend.filter((id) => !zwischenIds.has(id));
 
     // Fahrten abrufen
-    const {data: fahrten, error} = await supabase
-        .from("fahrten")
-        .select("fahrerA_id, anwesend_ids");
+    const { data: fahrten, error } = await supabase.from("fahrten").select("fahrerA_id, anwesend_ids");
 
     // TODO: error handling
     // if (error) return res.status(500).json({ error: error.message });
@@ -37,22 +42,22 @@ export async function calcQuoteSp(supabase: SupabaseClient<any, "public" extends
     return counter;
 }
 
-export async function calcQuoteZw(supabase: SupabaseClient<any, "public" extends keyof any ? "public" : (string & keyof any), any>, fahrerA_id: number, anwesend: number[], startPunktIds: Set<any>) {
-
+export async function calcQuoteZw(
+    supabase: SupabaseClient<any, "public" extends keyof any ? "public" : string & keyof any, any>,
+    fahrerA_id: number,
+    anwesend: number[],
+    startPunktIds: Set<any>,
+) {
     // Startpunktfahrer mit startpunkt = 1
-    const {data: startPunktfahrer, error: err1} = await supabase
-        .from("fahrer")
-        .select("id")
-        .eq("startpunkt", 1);
+    const { data: startPunktfahrer, error: err1 } = await supabase.from("fahrer").select("id").eq("startpunkt", 1);
 
     // if (err1) return res.status(500).json({error: err1.message});
 
     // Fahrten abrufen
-    const {data: fahrten, error} = await supabase
+    const { data: fahrten, error } = await supabase
         .from("fahrten")
         .select("fahrerB_id, anwesend_ids")
-        .eq('fahrerA_id', fahrerA_id)
-    ;
+        .eq("fahrerA_id", fahrerA_id);
 
     // TODO: error handling
     // if (error) return res.status(500).json({error: error.message});

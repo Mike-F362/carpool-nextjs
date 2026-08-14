@@ -1,15 +1,15 @@
 "use client";
 
-import Head from 'next/head';
-import React, {useEffect, useRef, useState} from 'react';
-import {supabase} from '@/lib/supabaseClient';
-import {User as SupabaseUser} from "@supabase/auth-js";
+import Head from "next/head";
+import React, { useEffect, useRef, useState } from "react";
+import { supabase } from "@/lib/supabaseClient";
+import type { User as SupabaseUser } from "@supabase/auth-js";
 import NeuerTag from "@/components/new_day";
-import Tour from "@/interfaces/tour";
+import type Tour from "@/interfaces/tour";
 import Fahrtentabelle from "@/components/tour_table";
-import Driver from "@/interfaces/driver";
+import type Driver from "@/interfaces/driver";
 import AuthModal from "@/components/auth_modal";
-import FahrerVorschlag from "@/interfaces/driver_suggestion";
+import type FahrerVorschlag from "@/interfaces/driver_suggestion";
 import Header from "@/components/header";
 
 export default function Home() {
@@ -33,27 +33,27 @@ export default function Home() {
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [showModal, setShowModal] = useState(false);
 
-    const [allQuotesSp, setAllQuotesSp] = useState(new Map<string, Map<number, number>>);
-    const [allQuotesIm, setAllQuotesIm] = useState(new Map<number, Map<string, Map<number, number>>>);
-    const [lastTours, setLastTours] = useState(new Map<number, Date>);
+    const [allQuotesSp, setAllQuotesSp] = useState(new Map<string, Map<number, number>>());
+    const [allQuotesIm, setAllQuotesIm] = useState(new Map<number, Map<string, Map<number, number>>>());
+    const [lastTours, setLastTours] = useState(new Map<number, Date>());
 
     const [loadingOuotes, setLoadingOuotes] = useState(true);
     const [loadingTours, setLoadingTours] = useState(true);
 
     useEffect(() => {
-        supabase.auth.getSession().then(async ({data}) => {
+        supabase.auth.getSession().then(async ({ data }) => {
             setSession(data.session);
-            supabase.auth.getUser().then(value => {
+            supabase.auth.getUser().then((value) => {
                 const usr = value.data?.user;
                 setUser(usr);
                 setIsAdmin(usr?.app_metadata?.role === "admin");
             });
         });
         const {
-            data: {subscription},
+            data: { subscription },
         } = supabase.auth.onAuthStateChange((_event, sess) => {
             setSession(sess);
-            supabase.auth.getUser().then(value => {
+            supabase.auth.getUser().then((value) => {
                 const usr = value.data?.user;
                 setUser(usr);
                 setIsAdmin(usr?.app_metadata?.role === "admin");
@@ -64,7 +64,7 @@ export default function Home() {
             });
         });
 
-        return () => subscription.unsubscribe()
+        return () => subscription.unsubscribe();
     }, []);
 
     async function ladeFahrer(user: SupabaseUser) {
@@ -74,7 +74,7 @@ export default function Home() {
                     method: "GET",
                     headers: {
                         "Content-Type": "application/json",
-                        "Authorization": `Bearer ${session?.access_token}`,
+                        Authorization: `Bearer ${session?.access_token}`,
                     },
                 });
 
@@ -85,21 +85,23 @@ export default function Home() {
 
                 const data = await res.json();
 
-                const driver: Driver[] = data.map((e: { id: number; name: string; label: string; startpunkt: number; }) => ({
-                    id: e.id,
-                    name: e.name,
-                    label: e.label,
-                    startpunkt: e.startpunkt
-                }));
+                const driver: Driver[] = data.map(
+                    (e: { id: number; name: string; label: string; startpunkt: number }) => ({
+                        id: e.id,
+                        name: e.name,
+                        label: e.label,
+                        startpunkt: e.startpunkt,
+                    }),
+                );
 
-                const sp1 = driver.filter(fahrer => fahrer.startpunkt === 1).map(fahrer => fahrer.id);
-                const zw = driver.filter(fahrer => fahrer.startpunkt === 2).map(fahrer => fahrer.id);
+                const sp1 = driver.filter((fahrer) => fahrer.startpunkt === 1).map((fahrer) => fahrer.id);
+                const zw = driver.filter((fahrer) => fahrer.startpunkt === 2).map((fahrer) => fahrer.id);
 
-                setDriversSp(sp1)
+                setDriversSp(sp1);
                 setDriversIm(sp1.concat(zw));
                 setDrivers(driver);
             } else {
-                setDriversSp([])
+                setDriversSp([]);
                 setDriversIm([]);
                 setDrivers([]);
             }
@@ -115,7 +117,7 @@ export default function Home() {
                 const res = await fetch("/api/tours/list", {
                     method: "GET",
                     credentials: "include",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                 });
 
                 if (!res.ok) {
@@ -125,13 +127,21 @@ export default function Home() {
 
                 const data = await res.json();
 
-                const tours = data.tours.map((row: { id: number; datum: string; fahrerA_id: number; fahrerB_id: number; anwesend_ids: number[]; }) => ({
-                    id: row.id,
-                    datum: row.datum,
-                    fahrerA_id: row.fahrerA_id,
-                    fahrerB_id: row.fahrerB_id,
-                    anwesend_ids: row.anwesend_ids,
-                }));
+                const tours = data.tours.map(
+                    (row: {
+                        id: number;
+                        datum: string;
+                        fahrerA_id: number;
+                        fahrerB_id: number;
+                        anwesend_ids: number[];
+                    }) => ({
+                        id: row.id,
+                        datum: row.datum,
+                        fahrerA_id: row.fahrerA_id,
+                        fahrerB_id: row.fahrerB_id,
+                        anwesend_ids: row.anwesend_ids,
+                    }),
+                );
 
                 const currentMaxDate = data.maxDate ? new Date(data.maxDate) : null;
 
@@ -153,7 +163,7 @@ export default function Home() {
                 const res = await fetch("/api/fahrer/quotes_sp", {
                     method: "POST",
                     credentials: "include",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                 });
 
                 if (!res.ok) {
@@ -163,13 +173,15 @@ export default function Home() {
 
                 const quotes: Object = await res.json();
                 const allQuotes = Object.keys(quotes).reduce((obj, item) => {
-                    const quoteMap: Map<number, number> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
-                        return [parseInt(key), value as number];
-                    }));
+                    const quoteMap: Map<number, number> = new Map(
+                        Object.entries(quotes[item]).map(([key, value]) => {
+                            return [parseInt(key), value as number];
+                        }),
+                    );
 
                     obj.set(item, quoteMap);
 
-                    return obj
+                    return obj;
                 }, new Map<string, Map<number, number>>());
 
                 console.debug("QuoteSp:", allQuotes);
@@ -189,7 +201,7 @@ export default function Home() {
                 const res = await fetch("/api/fahrer/quotes_zw", {
                     method: "POST",
                     credentials: "include",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                 });
 
                 if (!res.ok) {
@@ -199,17 +211,21 @@ export default function Home() {
 
                 const quotes: Object = await res.json();
                 const allQuotes = Object.keys(quotes).reduce((obj, item) => {
-                    const quoteMap: Map<string, Map<number, number>> = new Map(Object.entries(quotes[item]).map(([key, value]) => {
-                        const innerQuoteMap: Map<number, number> = new Map(Object.entries(value).map(([key, value]) => {
-                            return [parseInt(key), value as number];
-                        }));
+                    const quoteMap: Map<string, Map<number, number>> = new Map(
+                        Object.entries(quotes[item]).map(([key, value]) => {
+                            const innerQuoteMap: Map<number, number> = new Map(
+                                Object.entries(value).map(([key, value]) => {
+                                    return [parseInt(key), value as number];
+                                }),
+                            );
 
-                        return [key, innerQuoteMap];
-                    }));
+                            return [key, innerQuoteMap];
+                        }),
+                    );
 
                     obj.set(parseInt(item), quoteMap);
 
-                    return obj
+                    return obj;
                 }, new Map<number, Map<string, Map<number, number>>>());
 
                 console.debug("QuoteSp:", allQuotes);
@@ -229,7 +245,7 @@ export default function Home() {
                 const res = await fetch("/api/fahrer/last_tour", {
                     method: "POST",
                     credentials: "include",
-                    headers: {"Content-Type": "application/json"},
+                    headers: { "Content-Type": "application/json" },
                 });
 
                 if (!res.ok) {
@@ -237,11 +253,13 @@ export default function Home() {
                     return;
                 }
 
-                const data: [{ driver_id: number, last_tour: Date }] = await res.json();
+                const data: [{ driver_id: number; last_tour: Date }] = await res.json();
 
-                const lastTours = new Map(data.map(tour => {
-                    return [tour.driver_id, new Date(tour.last_tour)];
-                }));
+                const lastTours = new Map(
+                    data.map((tour) => {
+                        return [tour.driver_id, new Date(tour.last_tour)];
+                    }),
+                );
 
                 console.debug("lastTours:", lastTours);
 
@@ -270,7 +288,7 @@ export default function Home() {
         const heute = new Date();
         const lastDate = maxDate;
 
-        let tag = lastDate && lastDate > heute ? new Date(lastDate) : new Date(heute);
+        const tag = lastDate && lastDate > heute ? new Date(lastDate) : new Date(heute);
 
         do {
             tag.setDate(tag.getDate() + 1);
@@ -285,7 +303,7 @@ export default function Home() {
         const fahrt: Tour = {
             datum,
             anwesend_ids,
-            ...(aktuellerVorschlag),
+            ...aktuellerVorschlag,
         };
 
         await supabase.from("fahrten").insert(fahrt);
@@ -299,9 +317,8 @@ export default function Home() {
         loadDriverQuotes(user);
 
         setTimeout(() => {
-            tableContainerRef.current?.scrollTo({top: 0, behavior: 'smooth'});
+            tableContainerRef.current?.scrollTo({ top: 0, behavior: "smooth" });
         }, 100);
-
     };
 
     const removeTour = async (id: number) => {
@@ -322,11 +339,11 @@ export default function Home() {
 
     const handleScroll = () => {
         if (!tableContainerRef.current) return;
-        const {scrollTop, scrollHeight, clientHeight} = tableContainerRef.current;
+        const { scrollTop, scrollHeight, clientHeight } = tableContainerRef.current;
         if (scrollTop + clientHeight >= scrollHeight - 10) {
             setVisibleRows((prev) => Math.min(prev + 20, tours.length));
         }
-    }
+    };
     return (
         <div className="d-flex flex-column vh-100">
             <Head>
@@ -336,11 +353,8 @@ export default function Home() {
             <div className="p-2 border-bottom bg-light">
                 {session ? (
                     <>
-                        <Header
-                            user={user}
-                            isAdmin={isAdmin}
-                            reset={resetTours}
-                        /></>
+                        <Header user={user} isAdmin={isAdmin} reset={resetTours} />
+                    </>
                 ) : (
                     <button className="btn btn-sm btn-outline-primary" onClick={() => setShowModal(true)}>
                         Anmelden
@@ -348,12 +362,11 @@ export default function Home() {
                 )}
             </div>
 
-            {showModal && <AuthModal onClose={() => setShowModal(false)}/>}
+            {showModal && <AuthModal onClose={() => setShowModal(false)} />}
 
             {session ? (
                 <main className="d-flex flex-column">
-
-                    <div style={{height: '1rem'}}></div>
+                    <div style={{ height: "1rem" }}></div>
 
                     <div className="d-flex gap-2 mb-3">
                         <button
@@ -363,20 +376,24 @@ export default function Home() {
                             {newDayActive ? "Abbrechen" : "Neuer Tag"}
                         </button>
                         {
-                            <div className="input-group mb-3" style={{width: '200px'}} hidden={!isAdmin}>
-                                <label className="input-group-text" htmlFor="pageSize">Zeilen</label>
+                            <div className="input-group mb-3" style={{ width: "200px" }} hidden={!isAdmin}>
+                                <label className="input-group-text" htmlFor="pageSize">
+                                    Zeilen
+                                </label>
                                 <select
                                     id="pageSize"
                                     className="form-select"
                                     value={pageSize}
-                                    onChange={e => {
+                                    onChange={(e) => {
                                         const val = parseInt(e.target.value);
                                         setPageSize(val);
                                         setVisibleRows(val);
                                     }}
                                 >
-                                    {[10, 20, 40, 60, 100].map(size => (
-                                        <option key={size} value={size}>{size}</option>
+                                    {[10, 20, 40, 60, 100].map((size) => (
+                                        <option key={size} value={size}>
+                                            {size}
+                                        </option>
                                     ))}
                                 </select>
                             </div>
@@ -419,11 +436,8 @@ export default function Home() {
                             tableContainerRef={tableContainerRef}
                             handleScroll={handleScroll}
                         />
-
                     </div>
-
                 </main>
-
             ) : (
                 <div className="container text-center mt-5 text-muted">Bitte anmelden, um die App zu verwenden.</div>
             )}

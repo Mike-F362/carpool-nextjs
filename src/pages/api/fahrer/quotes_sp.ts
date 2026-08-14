@@ -1,25 +1,25 @@
-import {NextApiRequest, NextApiResponse} from "next";
-import {calcQuoteSp, get_drivers} from "@/pages/api/fahrer/calc_qoutes";
-import {createApiClient} from "@/lib/supabase/api";
+import type { NextApiRequest, NextApiResponse } from "next";
+import { calcQuoteSp, get_drivers } from "@/pages/api/fahrer/calc_qoutes";
+import { createApiClient } from "@/lib/supabase/api";
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
     // Session-bound client: runs as `authenticated`, not as `anon`
     const supabase = createApiClient(req);
     const zwischenIds = await get_drivers(supabase, 2);
 
-    const {data, error} = await supabase.rpc("get_unique_attendance_ids");
+    const { data, error } = await supabase.rpc("get_unique_attendance_ids");
 
-    const anwesendIds = data.map(item => {
+    const anwesendIds = data.map((item) => {
         return item.anwesend_ids as number[];
     });
 
     const quotes = await anwesendIds.map(async (anwesend: number[]) => {
         const qoutesValue = await calcQuoteSp(supabase, anwesend, zwischenIds);
-        let res = {}
-        const key = anwesend.join('-')
+        const res = {};
+        const key = anwesend.join("-");
         res[key] = Object.fromEntries(qoutesValue);
         return res;
-    })
+    });
 
     const quotes_values = await Promise.all(quotes);
 
@@ -29,8 +29,8 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
                 obj[key] = value;
             });
 
-            return obj
-        }, {})
+            return obj;
+        }, {});
 
     // https://stackoverflow.com/questions/19874555/how-do-i-convert-array-of-objects-into-one-object-in-javascript
     const quotes_res = arrayToObject(quotes_values);
