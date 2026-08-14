@@ -4,3 +4,10 @@
 /.env.local
 .env
 *.tsbuildinfo
+# Working state of the Supabase CLI
+/supabase/.temp/
+# Working notes. Analysis and handover documents that explain how the code got
+# here, but say nothing a user of the app needs. Kept locally on purpose.
+/.notes/
+# Project conventions for the coding assistant, not part of the distribution.
+/CLAUDE.md
