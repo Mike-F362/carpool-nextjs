@@ -1,8 +1,8 @@
-import type { AppProps } from 'next/app';
+import type { AppProps } from "next/app";
 import { useEffect } from "react";
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
-import 'bootstrap/dist/css/bootstrap.min.css';
+import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
+import "bootstrap/dist/css/bootstrap.min.css";
 
 export default function App({ Component, pageProps }: AppProps) {
     useEffect(() => {
