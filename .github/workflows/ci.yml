@@ -19,6 +19,12 @@ jobs:
       # npm ci statt npm install: baut exakt gegen package-lock.json
       - run: npm ci
 
+      # `biome ci` prueft Format und Regeln in einem Lauf und aendert nichts.
+      # Fehler brechen den Build ab, Warnungen stehen im Log - das ist der
+      # dokumentierte Rest (any-Typen, Hook-Abhaengigkeiten, toter Code).
+      - name: Lint und Format
+        run: npx biome ci
+
       - name: Verhaltenstests (Algorithmus, Invarianten, echte Historie)
         run: npm test
 
