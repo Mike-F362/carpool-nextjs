@@ -3,7 +3,14 @@
 /node_modules/
 /.env.local
 .env
+# ".env" only matches that exact name, so every further variant needs its own
+# line. .env.example.local stays tracked - it is already in the index.
+.env.local.override
 *.tsbuildinfo
+/backups/
+# Supabase CLI, downloaded next to the sources
+/supabase.exe
+/supabase-go.exe
 # Working state of the Supabase CLI
 /supabase/.temp/
 # Working notes. Analysis and handover documents that explain how the code got
