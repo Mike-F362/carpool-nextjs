@@ -37,7 +37,7 @@
         display: table-row;
     }
 
-    .stickyMobile th {
+    .tableSticky .stickyMobile th {
         background-color: #fff;
     }
 }
