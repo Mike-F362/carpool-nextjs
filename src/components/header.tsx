@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { useState } from "react";
+import type { User as SupabaseUser } from "@supabase/auth-js";
 import styles from "./header.module.css";
 import { supabase } from "@/lib/supabaseClient";
 import AppVersion from "@/components/app_version";
@@ -9,7 +10,7 @@ export default function Header({
     reset,
     isAdmin,
 }: {
-    user: any;
+    user: SupabaseUser | null;
     reset?: () => Promise<void>;
     isAdmin?: boolean;
 }) {

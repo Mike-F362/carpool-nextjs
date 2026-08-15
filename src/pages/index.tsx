@@ -3,7 +3,7 @@
 import Head from "next/head";
 import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
-import type { User as SupabaseUser } from "@supabase/auth-js";
+import type { Session, User as SupabaseUser } from "@supabase/auth-js";
 import NeuerTag from "@/components/new_day";
 import type Tour from "@/interfaces/tour";
 import Fahrtentabelle from "@/components/tour_table";
@@ -28,8 +28,8 @@ export default function Home() {
     const [driversSp, setDriversSp] = useState<number[]>([]);
     const [driversIm, setDriversIm] = useState<number[]>([]);
 
-    const [session, setSession] = useState<any>(null);
-    const [user, setUser] = useState<any>(null);
+    const [session, setSession] = useState<Session | null>(null);
+    const [user, setUser] = useState<SupabaseUser | null>(null);
     const [isAdmin, setIsAdmin] = useState<boolean>(false);
     const [showModal, setShowModal] = useState(false);
 

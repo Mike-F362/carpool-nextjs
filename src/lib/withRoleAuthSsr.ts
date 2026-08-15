@@ -5,7 +5,9 @@ export function withRoleAuthSsr(requiredRole: string, inner: GetServerSideProps 
     return async (
         ctx: GetServerSidePropsContext,
     ): Promise<
-        { props: Promise<{ [p: string]: any }> | { [p: string]: any } } | { redirect: Redirect } | { notFound: true }
+        | { props: Promise<{ [p: string]: unknown }> | { [p: string]: unknown } }
+        | { redirect: Redirect }
+        | { notFound: true }
     > => {
         const { req } = ctx;
 

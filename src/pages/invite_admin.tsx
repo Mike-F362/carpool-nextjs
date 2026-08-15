@@ -1,25 +1,26 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
 import InviteLink from "@/components/invite_link";
 import { withRoleAuthSsr } from "@/lib/withRoleAuthSsr";
+import type Invite from "@/interfaces/invite";
 
 export const getServerSideProps = withRoleAuthSsr("admin");
 
 export default function InviteAdminPage() {
     const [email, setEmail] = useState("");
-    const [invites, setInvites] = useState<any[]>([]);
+    const [invites, setInvites] = useState<Invite[]>([]);
     const [msg, setMsg] = useState("");
     const [err, setErr] = useState("");
 
-    const loadInvites = async () => {
+    const loadInvites = useCallback(async () => {
         const res = await fetch("/api/invite/list");
         const data = await res.json();
         setInvites(data);
-    };
+    }, []);
 
     useEffect(() => {
         loadInvites();
-    }, []);
+    }, [loadInvites]);
 
     const handleCreate = async (e: React.FormEvent) => {
         e.preventDefault();

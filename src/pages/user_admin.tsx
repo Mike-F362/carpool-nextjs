@@ -1,21 +1,22 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
 import { withRoleAuthSsr } from "@/lib/withRoleAuthSsr";
+import type User from "@/interfaces/user";
 
 export const getServerSideProps = withRoleAuthSsr("admin");
 
 export default function UserAdminPage() {
-    const [users, setUsers] = useState<any[]>([]);
+    const [users, setUsers] = useState<User[]>([]);
 
-    const fetchUsers = async () => {
+    const fetchUsers = useCallback(async () => {
         const res = await fetch("/api/users/list");
         const data = (await res.json()) || [];
         setUsers(data);
-    };
+    }, []);
 
     useEffect(() => {
         fetchUsers();
-    }, []);
+    }, [fetchUsers]);
 
     const handleRoleChange = async (id: string, role: string) => {
         await fetch("/api/users/set-role", {

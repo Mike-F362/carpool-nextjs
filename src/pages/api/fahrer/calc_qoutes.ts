@@ -16,8 +16,6 @@ import type { SupabaseClient } from "@supabase/supabase-js";
  * implementation without a database (see tests/quotes.test.ts).
  */
 
-type SupabaseAny = SupabaseClient<any, any, any>;
-
 /** A trip as far as the leg-1 quota is concerned. */
 export interface FahrtSp {
     fahrerA_id: number | null;
@@ -36,7 +34,7 @@ export type QuotesSp = Record<string, Record<string, number>>;
 export type QuotesZw = Record<string, QuotesSp>;
 
 /** Ids of the drivers boarding at the given stop (1 = start, 2 = intermediate). */
-export async function get_drivers(supabase: SupabaseAny, startPoint: number): Promise<Set<number>> {
+export async function get_drivers(supabase: SupabaseClient, startPoint: number): Promise<Set<number>> {
     const { data, error } = await supabase.from("fahrer").select("id").eq("startpunkt", startPoint);
 
     if (error) throw new Error(`Could not load drivers for stop ${startPoint}: ${error.message}`);
@@ -116,7 +114,7 @@ export function groupQuotesZw(fahrten: FahrtZw[], startPunktIds: Set<number>): Q
 }
 
 /** One query for the whole leg-1 quota table. */
-export async function ladeQuotesSp(supabase: SupabaseAny): Promise<QuotesSp> {
+export async function ladeQuotesSp(supabase: SupabaseClient): Promise<QuotesSp> {
     const zwischenIds = await get_drivers(supabase, 2);
 
     const { data, error } = await supabase.from("fahrten").select("fahrerA_id, anwesend_ids");
@@ -127,7 +125,7 @@ export async function ladeQuotesSp(supabase: SupabaseAny): Promise<QuotesSp> {
 }
 
 /** One query for the whole leg-2 quota table. */
-export async function ladeQuotesZw(supabase: SupabaseAny): Promise<QuotesZw> {
+export async function ladeQuotesZw(supabase: SupabaseClient): Promise<QuotesZw> {
     const startPunktIds = await get_drivers(supabase, 1);
 
     const { data, error } = await supabase.from("fahrten").select("fahrerA_id, fahrerB_id, anwesend_ids");

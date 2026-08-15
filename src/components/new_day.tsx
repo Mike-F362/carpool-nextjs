@@ -10,7 +10,7 @@ import type { User as SupabaseUser } from "@supabase/auth-js";
 
 type Props = {
     tours: Tour[];
-    setTours: (d: any[]) => void;
+    setTours: (d: Tour[]) => void;
     setNewDayActive: (v: boolean) => void;
     drivers: Driver[];
     driversSp: number[];
@@ -20,13 +20,13 @@ type Props = {
     currentDate: Date;
     setCurrentDate: (value: ((prevState: Date) => Date) | Date) => void;
     loadTours: (user: SupabaseUser) => Promise<void>;
-    allQuotesSp: Map<any, any>;
-    allQuotesIm: Map<any, any>;
+    allQuotesSp: Map<string, Map<number, number>>;
+    allQuotesIm: Map<number, Map<string, Map<number, number>>>;
     loading: boolean;
     loadDriverQuotes: (user: SupabaseUser) => Promise<void>;
     isAdmin: boolean;
     user: SupabaseUser;
-    lastTours: Map<any, any>;
+    lastTours: Map<number, Date>;
 };
 
 export default function NeuerTag({
@@ -117,8 +117,8 @@ export default function NeuerTag({
         anwesend.sort((a, b) => {
             let res = (quotes.get(a) | 0) - (quotes.get(b) | 0);
             if (!res) {
-                const lastTourA = lastTours.get(a) || 0;
-                const lastTourB = lastTours.get(b) || 0;
+                const lastTourA = lastTours.get(a)?.getTime() ?? 0;
+                const lastTourB = lastTours.get(b)?.getTime() ?? 0;
 
                 res = lastTourA - lastTourB;
             }
@@ -157,7 +157,7 @@ export default function NeuerTag({
             // Erst Array.from, dann filtern: Iterator-Helfer wie
             // keys().filter() gibt es erst ab Chrome 122 / Safari 18.4.
             const partialMatchingQuotes = Array.from(allQuotesSp.keys()).filter((key) => {
-                const ids: [string] = key.split("-");
+                const ids: string[] = key.split("-");
                 return anwesendSp.every((id) => ids.includes(id.toString()));
             });
 
