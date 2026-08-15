@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import AdminLayout from "@/components/admin/layout";
 import type Driver from "@/interfaces/driver";
 import { withRoleAuthSsr } from "@/lib/withRoleAuthSsr";
@@ -11,15 +11,15 @@ export default function FahrerAdminPage() {
     const [startpunkt, setStartpunkt] = useState("1");
     const [label, setLabel] = useState("");
 
-    const fetchFahrer = async () => {
+    const fetchFahrer = useCallback(async () => {
         const res = await fetch("/api/fahrer/list");
         const data = await res.json();
         setFahrer(data);
-    };
+    }, []);
 
     useEffect(() => {
         fetchFahrer();
-    }, []);
+    }, [fetchFahrer]);
 
     const handleCreate = async () => {
         await fetch("/api/fahrer/create", {

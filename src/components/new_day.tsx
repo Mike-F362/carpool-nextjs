@@ -56,6 +56,11 @@ export default function NeuerTag({
     const [quotesZw, setQuotesZw] = useState(new Map<number, number>());
     const [quotesSp, setQuotesSp] = useState(new Map<number, number>());
 
+    // Bewusst nur an `loading`: der Vorschlag wird einmal aus der letzten Fahrt
+    // vorbelegt, sobald die Daten stehen. Traegt man `tours` nach, laeuft der
+    // Effekt nach jedem Speichern erneut und ueberschreibt dabei einen von Hand
+    // gewaehlten Fahrer - genau das, was das UI ausdruecklich zulassen soll.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: seeds the form once, must not follow later edits
     useEffect(() => {
         const init = async () => {
             if (tours?.length) {

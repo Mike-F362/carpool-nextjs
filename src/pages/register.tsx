@@ -16,7 +16,7 @@ export default function RegisterPage() {
             if (typeof token === "string") setCode(token);
             if (typeof email === "string") setEmail(email);
         }
-    }, [router.isReady, router.query.token]);
+    }, [router.isReady, router.query]);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

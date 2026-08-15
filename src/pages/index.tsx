@@ -40,6 +40,13 @@ export default function Home() {
     const [loadingOuotes, setLoadingOuotes] = useState(true);
     const [loadingTours, setLoadingTours] = useState(true);
 
+    // Der Effekt haengt eine Subscription an onAuthStateChange und muss genau
+    // einmal laufen; ladeFahrer, loadTours und loadDriverQuotes werden erst
+    // *im* Callback aufgerufen, nicht beim Anmelden des Effekts. Traegt man sie
+    // nach, wird die Subscription bei jedem Rendern ab- und wieder aufgebaut.
+    // Die drei Funktionen schliessen nur ueber Setter, deren Identitaet React
+    // stabil haelt - ein veralteter Abschluss kann hier nichts falsch machen.
+    // biome-ignore lint/correctness/useExhaustiveDependencies: mount-only auth subscription
     useEffect(() => {
         supabase.auth.getSession().then(async ({ data }) => {
             setSession(data.session);
