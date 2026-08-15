@@ -55,7 +55,7 @@ function loadReal(dir) {
     const tours = csv("fahrten.csv")
         .map((l) => {
             const m = l.match(/^([^,]*),([^,]*),([^,]*),"?(\[[^\]]*\])"?,([^,]*),([^,]*)$/);
-            if (!m) throw new Error("CSV nicht parsebar: " + l);
+            if (!m) throw new Error(`CSV nicht parsebar: ${l}`);
             return {
                 date: m[2],
                 present: JSON.parse(m[4]).sort((a, b) => a - b),
@@ -69,7 +69,7 @@ function loadReal(dir) {
 
 function buildScenario() {
     if (SCENARIO === "real") {
-        const dir = arg("--data", "/sessions/determined-zealous-cannon/mnt/fg/db_export_2026-08-13");
+        const dir = arg("--data", "tests/fixtures");
         return loadReal(dir);
     }
 
@@ -91,8 +91,8 @@ function buildScenario() {
         stress: {
             weeks: Number(arg("--weeks")) || 16,
             members: [1, 2, 3, 4]
-                .map((i) => ({ id: i, label: "A" + i, stop: 1, canDrive: true }))
-                .concat([5, 6].map((i) => ({ id: i, label: "B" + (i - 4), stop: 2, canDrive: true }))),
+                .map((i) => ({ id: i, label: `A${i}`, stop: 1, canDrive: true }))
+                .concat([5, 6].map((i) => ({ id: i, label: `B${i - 4}`, stop: 2, canDrive: true }))),
             _r: rng(42),
             present(ms) {
                 let ids;
@@ -195,12 +195,12 @@ function suggestBuckets(history, present, warn) {
     const presentB = present.filter((id) => byId.get(id).stop === 2);
     const bucketsB = new Map();
     for (const t of history) {
-        const k = t.drivers[0] + "|" + t.present.filter((id) => byId.get(id).stop === 2).join("-");
+        const k = `${t.drivers[0]}|${t.present.filter((id) => byId.get(id).stop === 2).join("-")}`;
         if (!bucketsB.has(k)) bucketsB.set(k, new Map());
         const c = bucketsB.get(k);
         c.set(t.drivers[1], (c.get(t.drivers[1]) ?? 0) + 1);
     }
-    const quotesB = bucketsB.get(driverA + "|" + presentB.join("-")) ?? new Map();
+    const quotesB = bucketsB.get(`${driverA}|${presentB.join("-")}`) ?? new Map();
 
     return [driverA, pick([...presentB, driverA], quotesB)];
 }
@@ -319,7 +319,7 @@ p(`Teilnehmer     : ${MEMBERS.map((m) => `${m.label}(Stopp ${m.stop})`).join(", 
 for (const m of MEMBERS) {
     const n = SCHEDULE.filter((d) => d.present.includes(m.id)).length;
     p(
-        `  ${(m.label + " dabei").padEnd(16)}: ${String(n).padStart(3)} von ${SCHEDULE.length} (${Math.round((100 * n) / SCHEDULE.length)} %)`,
+        `  ${(`${m.label} dabei`).padEnd(16)}: ${String(n).padStart(3)} von ${SCHEDULE.length} (${Math.round((100 * n) / SCHEDULE.length)} %)`,
     );
 }
 p(`Besetzungen    : ${new Set(SCHEDULE.map((d) => d.present.join("-"))).size} verschiedene Kombinationen`);
@@ -355,7 +355,7 @@ for (const basis of ["fahrer", "mitfahrer"]) {
     table(rows);
 
     p("Spreizung (max-min Delta) je Etappe:");
-    const sp = [["Verfahren", ...Array.from({ length: N_LEGS }, (_, i) => "Etappe " + (i + 1))]];
+    const sp = [["Verfahren", ...Array.from({ length: N_LEGS }, (_, i) => `Etappe ${i + 1}`)]];
     for (const r of results) {
         const st = evaluate(r.history, basis);
         sp.push([
@@ -391,7 +391,7 @@ if (warns.fallback) {
 
 if (!argv.includes("--no-detail")) {
     h(2, "Fahrtenfolge");
-    const rows = [["Datum", "Anwesend", ...results.flatMap((r) => [r.name + " A", r.name + " B"])]];
+    const rows = [["Datum", "Anwesend", ...results.flatMap((r) => [`${r.name} A`, `${r.name} B`])]];
     SCHEDULE.forEach((d, i) => {
         rows.push([d.date, d.present.map(lbl).join(","), ...results.flatMap((r) => r.history[i].drivers.map(lbl))]);
     });

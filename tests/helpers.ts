@@ -49,7 +49,7 @@ export function loadRealFixture(): { members: Member[]; tours: Tour[] } {
     const tours: Tour[] = read("fahrten.csv")
         .map((l) => {
             const m = l.match(/^([^,]*),([^,]*),([^,]*),"?(\[[^\]]*\])"?,([^,]*),([^,]*)$/);
-            if (!m) throw new Error("Fixture nicht parsebar: " + l);
+            if (!m) throw new Error(`Fixture nicht parsebar: ${l}`);
             return {
                 date: m[2],
                 present: (JSON.parse(m[4]) as number[]).sort((a, b) => a - b),

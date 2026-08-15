@@ -20,7 +20,7 @@ import path from "node:path";
 const argv = process.argv.slice(2);
 const arg = (n, d) => (argv.includes(n) ? argv[argv.indexOf(n) + 1] : d);
 const SEEDS = Number(arg("--seeds", 200));
-const DIR = arg("--data", "/sessions/determined-zealous-cannon/mnt/fg/db_export_2026-08-13");
+const DIR = arg("--data", "tests/fixtures");
 const PS = [0, 0.1, 0.25, 0.5];
 
 const csv = (f) => fs.readFileSync(path.join(DIR, f), "utf8").trim().split("\n").slice(1);
@@ -98,11 +98,11 @@ function bucketSuggest(hist, present, leg, prevDriver) {
     const pB = present.filter((id) => byId.get(id).stop === 2);
     const b = new Map();
     for (const t of hist) {
-        const k = t.drivers[0] + "|" + t.present.filter((id) => byId.get(id).stop === 2).join("-");
+        const k = `${t.drivers[0]}|${t.present.filter((id) => byId.get(id).stop === 2).join("-")}`;
         if (!b.has(k)) b.set(k, new Map());
         b.get(k).set(t.drivers[1], (b.get(k).get(t.drivers[1]) ?? 0) + 1);
     }
-    const q = b.get(prevDriver + "|" + pB.join("-")) ?? new Map();
+    const q = b.get(`${prevDriver}|${pB.join("-")}`) ?? new Map();
     return pick([...pB, prevDriver], (x) => q.get(x) ?? 0, last);
 }
 
@@ -251,8 +251,8 @@ for (const [strat, name, basis] of VERFAHREN) {
     console.log(
         `  ${name.padEnd(34)} ${
             r.erholt === null
-                ? "nie erreicht  (Restabweichung " + r.ende.toFixed(2) + ")"
-                : String(r.erholt).padStart(3) + " Fahrten   (Restabweichung am Ende " + r.ende.toFixed(2) + ")"
+                ? `nie erreicht  (Restabweichung ${r.ende.toFixed(2)})`
+                : `${String(r.erholt).padStart(3)} Fahrten   (Restabweichung am Ende ${r.ende.toFixed(2)})`
         }`,
     );
 }

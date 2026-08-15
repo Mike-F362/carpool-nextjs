@@ -104,7 +104,7 @@ describe("Row Level Security", () => {
         assert.deepEqual(
             treffer,
             [],
-            "Policies pruefen die Rolle in user_metadata (client-beschreibbar): " + treffer.join(", "),
+            `Policies pruefen die Rolle in user_metadata (client-beschreibbar): ${treffer.join(", ")}`,
         );
     });
 
@@ -153,7 +153,7 @@ describe("Secrets und Konfiguration", () => {
         const lose = Object.entries({ ...pkg.dependencies, ...pkg.devDependencies })
             .filter(([, v]) => v === "latest" || v === "*")
             .map(([k]) => k);
-        assert.deepEqual(lose, [], "nicht festgelegte Versionen machen Builds unreproduzierbar: " + lose.join(", "));
+        assert.deepEqual(lose, [], `nicht festgelegte Versionen machen Builds unreproduzierbar: ${lose.join(", ")}`);
     });
 
     test("keine Zugangsdaten im Repository", () => {
@@ -167,7 +167,7 @@ describe("Secrets und Konfiguration", () => {
         } catch {
             return; // kein Git verfuegbar (Tarball, Container) - nichts zu pruefen
         }
-        assert.equal(verfolgt, "", "Zugangsdaten sind eingecheckt: " + verfolgt.split("\n").join(", "));
+        assert.equal(verfolgt, "", `Zugangsdaten sind eingecheckt: ${verfolgt.split("\n").join(", ")}`);
     });
 });
 
@@ -192,6 +192,6 @@ describe("Browser-Kompatibilitaet", () => {
             }
         };
         walk(path.join(ROOT, "src"));
-        assert.deepEqual(treffer, [], "sehr neue ES-Methoden ohne breite Browserunterstuetzung: " + treffer.join(", "));
+        assert.deepEqual(treffer, [], `sehr neue ES-Methoden ohne breite Browserunterstuetzung: ${treffer.join(", ")}`);
     });
 });

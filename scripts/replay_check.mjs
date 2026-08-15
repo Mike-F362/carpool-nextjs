@@ -19,9 +19,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const argv = process.argv.slice(2);
-const DIR = argv.includes("--data")
-    ? argv[argv.indexOf("--data") + 1]
-    : "/sessions/determined-zealous-cannon/mnt/fg/db_export_2026-08-13";
+const DIR = argv.includes("--data") ? argv[argv.indexOf("--data") + 1] : "tests/fixtures";
 
 const csv = (f) => fs.readFileSync(path.join(DIR, f), "utf8").trim().split("\n").slice(1);
 
@@ -90,11 +88,11 @@ function bucket(hist, present, realA) {
     const presentB = present.filter((id) => byId.get(id).stop === 2);
     const bB = new Map();
     for (const t of hist) {
-        const k = t.drivers[0] + "|" + t.present.filter((id) => byId.get(id).stop === 2).join("-");
+        const k = `${t.drivers[0]}|${t.present.filter((id) => byId.get(id).stop === 2).join("-")}`;
         if (!bB.has(k)) bB.set(k, new Map());
         bB.get(k).set(t.drivers[1], (bB.get(k).get(t.drivers[1]) ?? 0) + 1);
     }
-    const qB = bB.get(realA + "|" + presentB.join("-")) ?? new Map();
+    const qB = bB.get(`${realA}|${presentB.join("-")}`) ?? new Map();
     const b = pick([...presentB, realA], (x) => qB.get(x) ?? 0, last);
     return { a, b, fb };
 }
