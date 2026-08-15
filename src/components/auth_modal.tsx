@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 
 export default function AuthModal({ onClose }: { onClose: () => void }) {
@@ -7,19 +7,6 @@ export default function AuthModal({ onClose }: { onClose: () => void }) {
     const [pw, setPw] = useState("");
     const [error, setError] = useState("");
     const [info, setInfo] = useState("");
-
-    useEffect(() => {
-        const { data: listener } = supabase.auth.onAuthStateChange((event, session) => {
-            if (event === "SIGNED_IN" && session) {
-                document.cookie = `sb-access-token=${session.access_token}; path=/`;
-                document.cookie = `sb-refresh-token=${session.refresh_token}; path=/`;
-            }
-        });
-
-        return () => {
-            listener?.subscription.unsubscribe();
-        };
-    }, []);
 
     const login = async (e: React.FormEvent) => {
         e.preventDefault();
