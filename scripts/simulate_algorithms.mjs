@@ -207,7 +207,8 @@ function suggestBuckets(history, present, warn) {
 
 // ------------------------------------------------- Verfahren 2+3: Saldoverfahren
 
-function suggestBalance(ledger, present, last, basis) {
+// basis steckt schon im ledger - fuer die Auswahl zaehlt nur das Saldo.
+function suggestBalance(ledger, present, last, _basis) {
     const drivers = [];
     for (let leg = 1; leg <= N_LEGS; leg++) {
         const cands = eligible(present, leg, leg === 1 ? null : drivers[leg - 2]);

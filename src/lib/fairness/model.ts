@@ -126,7 +126,10 @@ export function suggestDrivers(
     present: number[],
     ledger: Ledger,
     last: Map<number, string>,
-    opts: Options,
+    // Der Maßstab entscheidet, wer eine Etappe *schuldet* - wer sie fahren
+    // darf, haengt nur am Zustiegspunkt. Der Parameter bleibt in der Signatur,
+    // damit Vorschlag und Buchung dieselbe Optionsmenge nehmen.
+    _opts: Options,
 ): (number | null)[] {
     const legs = legCount(members);
     const out: (number | null)[] = [];

@@ -261,8 +261,9 @@ npm test             # behaviour tests: algorithm, invariants, real history (Nod
 npm run test:schema  # schema, configuration and browser-compatibility checks
 npm run test:watch   # watch mode
 npm run typecheck    # tsc --noEmit
-npm run lint         # Biome: formatting and lint rules, read-only
-npm run lint:fix     # the same, applying the safe fixes
+npm run lint         # Biome: formatting and lint rules, one line per rule
+npm run lint:details # the same with the full diagnostics
+npm run lint:fix     # applies the safe fixes
 npm run format       # formatter only
 npm run build        # production build
 ```

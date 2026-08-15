@@ -1,7 +1,7 @@
 "use client";
 
 import Head from "next/head";
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { supabase } from "@/lib/supabaseClient";
 import type { User as SupabaseUser } from "@supabase/auth-js";
 import NeuerTag from "@/components/new_day";
@@ -171,11 +171,11 @@ export default function Home() {
                     return;
                 }
 
-                const quotes: Object = await res.json();
+                const quotes: Record<string, Record<string, number>> = await res.json();
                 const allQuotes = Object.keys(quotes).reduce((obj, item) => {
                     const quoteMap: Map<number, number> = new Map(
                         Object.entries(quotes[item]).map(([key, value]) => {
-                            return [parseInt(key), value as number];
+                            return [Number.parseInt(key, 10), value as number];
                         }),
                     );
 
@@ -209,13 +209,13 @@ export default function Home() {
                     return;
                 }
 
-                const quotes: Object = await res.json();
+                const quotes: Record<string, Record<string, Record<string, number>>> = await res.json();
                 const allQuotes = Object.keys(quotes).reduce((obj, item) => {
                     const quoteMap: Map<string, Map<number, number>> = new Map(
                         Object.entries(quotes[item]).map(([key, value]) => {
                             const innerQuoteMap: Map<number, number> = new Map(
                                 Object.entries(value).map(([key, value]) => {
-                                    return [parseInt(key), value as number];
+                                    return [Number.parseInt(key, 10), value as number];
                                 }),
                             );
 
@@ -223,7 +223,7 @@ export default function Home() {
                         }),
                     );
 
-                    obj.set(parseInt(item), quoteMap);
+                    obj.set(Number.parseInt(item, 10), quoteMap);
 
                     return obj;
                 }, new Map<number, Map<string, Map<number, number>>>());
@@ -352,9 +352,7 @@ export default function Home() {
 
             <div className="p-2 border-bottom bg-light">
                 {session ? (
-                    <>
-                        <Header user={user} isAdmin={isAdmin} reset={resetTours} />
-                    </>
+                    <Header user={user} isAdmin={isAdmin} reset={resetTours} />
                 ) : (
                     <button type="button" className="btn btn-sm btn-outline-primary" onClick={() => setShowModal(true)}>
                         Anmelden
@@ -386,7 +384,7 @@ export default function Home() {
                                     className="form-select"
                                     value={pageSize}
                                     onChange={(e) => {
-                                        const val = parseInt(e.target.value);
+                                        const val = Number.parseInt(e.target.value, 10);
                                         setPageSize(val);
                                         setVisibleRows(val);
                                     }}

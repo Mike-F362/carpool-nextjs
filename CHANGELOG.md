@@ -71,6 +71,9 @@ changelog while it was still a single-group prototype.
   suite.
 - CI calls `npm test` and `npm run test:schema` instead of repeating the file
   lists.
+- `npm run lint` reports one line per rule; the full diagnostics moved to
+  `npm run lint:details`. What is left after clearing the mechanical findings is
+  four rules worth arguing about, and that fits on a screen.
 - Line endings are normalised per file type (`.gitattributes`). A batch file
   checked out with LF breaks, because cmd.exe locates `GOTO` targets by byte
   offset; the fixture CSVs are pinned to LF, because the readers in the golden

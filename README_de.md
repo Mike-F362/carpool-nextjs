@@ -261,8 +261,9 @@ npm test             # Verhaltenstests: Algorithmus, Invarianten, echte Historie
 npm run test:schema  # Schema, Konfiguration und Browser-Kompatibilität
 npm run test:watch   # Watch-Modus
 npm run typecheck    # tsc --noEmit
-npm run lint         # Biome: Format und Regeln, nur lesend
-npm run lint:fix     # dasselbe, wendet die sicheren Korrekturen an
+npm run lint         # Biome: Format und Regeln, eine Zeile je Regel
+npm run lint:details # dasselbe mit der vollstaendigen Ausgabe
+npm run lint:fix     # wendet die sicheren Korrekturen an
 npm run format       # nur der Formatter
 npm run build        # Produktionsbuild
 ```

@@ -7,7 +7,7 @@ export function withRoleAuthSsr(requiredRole: string, inner: GetServerSideProps 
     ): Promise<
         { props: Promise<{ [p: string]: any }> | { [p: string]: any } } | { redirect: Redirect } | { notFound: true }
     > => {
-        const { req, res } = ctx;
+        const { req } = ctx;
 
         const supabase = createServerClient(
             process.env.NEXT_PUBLIC_SUPABASE_URL!,

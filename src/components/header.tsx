@@ -1,5 +1,5 @@
 import Link from "next/link";
-import React, { useState } from "react";
+import { useState } from "react";
 import styles from "./header.module.css";
 import { supabase } from "@/lib/supabaseClient";
 import AppVersion from "@/components/app_version";

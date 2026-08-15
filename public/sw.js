@@ -96,7 +96,7 @@ async function staleWhileRevalidate(request, cacheName) {
 async function navigationMitOfflineFallback(request) {
     try {
         return await fetch(request);
-    } catch (fehler) {
+    } catch {
         const cache = await caches.open(SHELL_CACHE);
         const offline = await cache.match(OFFLINE_SEITE);
         return (

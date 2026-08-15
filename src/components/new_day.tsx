@@ -58,7 +58,7 @@ export default function NeuerTag({
 
     useEffect(() => {
         const init = async () => {
-            if (tours && tours.length) {
+            if (tours?.length) {
                 const letzteAnwesenheit = new Set(tours[tours.length - 1].anwesend_ids);
 
                 setCurrentAttendance(new Set(letzteAnwesenheit));
@@ -344,7 +344,7 @@ export default function NeuerTag({
                         id="fahrerA"
                         value={currentDriverSuggestion.fahrerA_id}
                         onChange={async (e) => {
-                            const fahrerA_id = parseInt(e.target.value) | 0;
+                            const fahrerA_id = Number.parseInt(e.target.value, 10) | 0;
 
                             let fahrerB_id = await berechneFahrerVorschlagZw(fahrerA_id, currentAttendance);
 
@@ -375,7 +375,7 @@ export default function NeuerTag({
                         onChange={(e) =>
                             setCurrentDriverSuggestion({
                                 ...currentDriverSuggestion,
-                                fahrerB_id: parseInt(e.target.value) | 0,
+                                fahrerB_id: Number.parseInt(e.target.value, 10) | 0,
                             })
                         }
                     >

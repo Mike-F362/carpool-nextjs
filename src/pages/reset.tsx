@@ -13,7 +13,7 @@ export default function ResetPage() {
         e.preventDefault();
         const { error } = await supabase.auth.updateUser({ password: pw });
         if (error) {
-            alert("Fehler: " + error.message);
+            alert(`Fehler: ${error.message}`);
         } else {
             setDone(true);
             setTimeout(() => router.push("/"), 2000);

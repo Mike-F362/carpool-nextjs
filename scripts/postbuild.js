@@ -1,6 +1,6 @@
-const fs = require("fs");
-const path = require("path");
-const { execSync } = require("child_process");
+const fs = require("node:fs");
+const path = require("node:path");
+const { execSync } = require("node:child_process");
 
 const version = require("../package.json").version;
 let gitTag = "";
@@ -8,13 +8,13 @@ let commitHash = "";
 
 try {
     gitTag = execSync("git describe --tags --abbrev=0")?.toString().trim();
-} catch (e) {
+} catch {
     console.warn("Could not determine Git-Tag-Data");
 }
 
 try {
     commitHash = execSync("git rev-parse --short HEAD").toString().trim();
-} catch (e) {
+} catch {
     console.warn("Could not determine Git-Commit-Data");
 }
 
