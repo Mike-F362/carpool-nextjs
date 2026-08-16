@@ -28,6 +28,12 @@ rem  Delayed expansion stays OFF on purpose: it would eat "!" in the password.
 rem  `auth` carries the user accounts including app_metadata, which is where
 rem  this app reads roles from (see src\lib\roles.ts). Dumping `public` alone
 rem  yields tours whose invites reference accounts that no longer exist.
+rem  Captured before the first SHIFT. SHIFT without /n moves %1 into %0, so
+rem  after parsing a single option %~dp0 points at an argument instead of at
+rem  this script -- which silently moved both .env.local and the default
+rem  output folder one directory up.
+set "SCRIPTDIR=%~dp0"
+
 set "SCHEMAS=public,auth"
 set "DBURL=%SUPABASE_DB_URL%"
 set "LOCAL="
@@ -76,7 +82,7 @@ if defined DBURL goto have_target
 
 rem  Only this one key is read. Loading the whole file would also drag
 rem  SUPABASE_SERVICE_ROLE_KEY into the environment of everything below.
-set "ENVFILE=%~dp0..\.env.local"
+set "ENVFILE=%SCRIPTDIR%..\.env.local"
 if not exist "%ENVFILE%" goto no_url
 for /f "usebackq eol=# tokens=1,* delims==" %%A in ("%ENVFILE%") do if /i "%%A"=="SUPABASE_DB_URL" set "DBURL=%%B"
 if not defined DBURL goto no_url
@@ -86,7 +92,7 @@ goto have_target
 
 :no_url
 echo No database URL. Add a line to .env.local: 1>&2
-echo   SUPABASE_DB_URL=postgresql://postgres.^<ref^>:^<password^>@^<host^>:5432/postgres 1>&2
+echo SUPABASE_DB_URL=postgresql://postgres.^<ref^>:^<password^>@^<host^>:5432/postgres 1>&2
 echo Dashboard -^> Connect -^> Session pooler (URI, port 5432). 1>&2
 echo Or pass --db-url ^<url^> / --local. 1>&2
 exit /b 2
@@ -104,7 +110,7 @@ for /f "usebackq delims=" %%T in (`powershell -NoProfile -Command "Get-Date -For
 if not defined STAMP set "STAMP=manual"
 rem  Default target sits next to the repo, not next to the current directory,
 rem  so a double-click from Explorer does not scatter dumps into system32.
-if not defined OUT set "OUT=%~dp0..\backups\%STAMP%"
+if not defined OUT set "OUT=%SCRIPTDIR%..\backups\%STAMP%"
 if not exist "%OUT%" mkdir "%OUT%"
 
 rem  Roles are cluster-wide and not covered by a schema dump.
