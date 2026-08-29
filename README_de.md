@@ -1,4 +1,4 @@
-# Fahrtverteilung für Fahrgemeinschaften
+# Fahrgemeinschaftsplaner
 
 *[English version: README.md](README.md)*
 

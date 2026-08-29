@@ -1,7 +1,7 @@
 {
     "id": "/",
-    "name": "Fahrtverteilung – Fahrgemeinschaft",
-    "short_name": "Fahrtverteilung",
+    "name": "Fahrgemeinschaftsplaner",
+    "short_name": "Carpool",
     "description": "Verteilt die Fahrten einer Fahrgemeinschaft gerecht auf die Fahrberechtigten.",
     "lang": "de",
     "dir": "ltr",

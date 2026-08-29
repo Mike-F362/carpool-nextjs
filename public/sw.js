@@ -1,5 +1,5 @@
 /*
- * Service Worker der Fahrtverteilung.
+ * Service Worker des Fahrgemeinschaftsplaners.
  *
  * Zweck: die App laesst sich installieren, startet auch ohne Netz und laedt bei
  * wiederholten Aufrufen schneller. Mehr nicht - die Fahrtendaten kommen
